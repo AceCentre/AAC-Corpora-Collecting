@@ -1,6 +1,24 @@
 # AAC-Corpora-Collecting
 Research figuring out how we collect corpora/message histories from AAC system
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Windows OS Based AAC Software](#windows-os-based-aac-software)
+  - [Grid 3](#grid-3)
+  - [TobiiDynavox - Communicator](#tobiidynavox---communicator)
+  - [TobiiDynavox - Snap+Core](#tobiidynavox---snapcore)
+  - [PRC NuVoice](#prc-nuvoice)
+- [iOS only](#ios-only)
+  - [Proloquo4Text](#proloquo4text)
+- [MultiPlatform](#multiplatform)
+  - [CoughDrop](#coughdrop)
+  - [AAC Speech Assistant](#aac-speech-assistant)
+    - [iOS](#ios)
+    - [Android](#android)
+  - [Predictable](#predictable)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Windows OS Based AAC Software
 
