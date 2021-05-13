@@ -55,7 +55,8 @@ NB: This ``C:\Users\Public\Documents\`` directory is in the Registry - HKEY_LOCA
 
 * Uses LAM - Language Activity Monitoring. 
 * PRC defined this format many years ago. More on its structure here: https://aacinstitute.org/language-sample-collection-in-aac/ - https://eric.ed.gov/?id=ED441300 
-* Its really not designed for this kind of collection. More like every hit. Its going to take quite a lot of parsing - and a lot of knowledge about what buttons are where for it to be useful. For example this is hello world - and being corrected then spoken. (Speak is I think E6). 
+* Its really not designed for this kind of collection. More like every hit. Its going to take quite a lot of parsing for it to be useful. For example this is hello world - and being corrected then spoken. You would have to look for SPE commands - and what preceded it until you hit a DEL or CLEAR command. 
+* See LAM-example.txt in this repo for a full example. 
 
 ```
         ### CAUTION ###
