@@ -37,6 +37,8 @@ NB: This ``C:\Users\Public\Documents\`` directory is in the Registry - HKEY_LOCA
 
 * Data is in Table *PhraseHistory* - Phraseid is matched on Table Phrases -id. Each item has a timestamp. So you can do counts on when and how many phrases are in each History. See this [SQLlite database](https://acecentreuk.sharepoint.com/:u:/s/AnonymousShares/ET2O79W1QQlIjVbRNQ2tgMwBCf5c3oncVo5QDOgSr5Tq9w?e=Q0T1co) for what the History data looks like
 
+
+
 ## TobiiDynavox - Communicator 
 
 * https://uk.tobiidynavox.com/pages/communicator-5-ap
@@ -46,6 +48,16 @@ NB: This ``C:\Users\Public\Documents\`` directory is in the Registry - HKEY_LOCA
 * Prediction engine is SwiftKey (you can see the .net sdk files of learned.json)
 
 * Looks like its not possible to "read" a swiftkey learned.lm file which is a bummer: https://support.swiftkey.com/hc/en-us/community/posts/115002963989-How-do-I-see-a-library-of-what-SwiftKey-has-learned-
+
+* So we do have some .phr files in "C:\Users\wwade\AppData\Roaming\Tobii Dynavox\Communicator\5\Users\User 1\Phrases"
+
+For example we have one called "Speech history.phr"
+
+It has a file like this:
+
+     ÿþÿ+H e l l o   h o w   a r e   y o u   I   t h i n k   i t ' s   o v e r   c o o k e d . @B ÿþÿH e l l o   h o w   a r e   y o u @B ÿþÿH e l l o @B ÿþÿ H e l l o ,   m y   n a m e   i s   t h i s   l o w   c a r b ? @B ÿþÿH i ,   t h i s   i s   d e l i c i o u s ! @B 
+     
+See file in the repo with this name
 
 ## TobiiDynavox - Snap+Core
 
