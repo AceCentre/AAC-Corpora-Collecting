@@ -45,6 +45,8 @@ NB: This ``C:\Users\Public\Documents\`` directory is in the Registry - HKEY_LOCA
 * Cant figure this out. Seems to only update on exiting Communicator. 
 * Prediction engine is SwiftKey (you can see the .net sdk files of learned.json)
 
+* Looks like its not possible to "read" a swiftkey learned.lm file which is a bummer: https://support.swiftkey.com/hc/en-us/community/posts/115002963989-How-do-I-see-a-library-of-what-SwiftKey-has-learned-
+
 ## TobiiDynavox - Snap+Core
 
 * https://uk.tobiidynavox.com/products/snap-core-first 
