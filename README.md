@@ -57,7 +57,7 @@ It has a file like this:
 
      ÿþÿ+H e l l o   h o w   a r e   y o u   I   t h i n k   i t ' s   o v e r   c o o k e d . @B ÿþÿH e l l o   h o w   a r e   y o u @B ÿþÿH e l l o @B ÿþÿ H e l l o ,   m y   n a m e   i s   t h i s   l o w   c a r b ? @B ÿþÿH i ,   t h i s   i s   d e l i c i o u s ! @B 
      
-See file in the repo with this name
+See file in the repo with this name. There are other files. Note - these are phrases a user/Tobii predefine. They might not actually use them
 
 ## TobiiDynavox - Snap+Core
 
