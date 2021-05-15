@@ -37,7 +37,7 @@ NB: This ``C:\Users\Public\Documents\`` directory is in the Registry - HKEY_LOCA
 
 * Data is in Table *PhraseHistory* - Phraseid is matched on Table Phrases -id. Each item has a timestamp. So you can do counts on when and how many phrases are in each History. See this [SQLlite database](https://acecentreuk.sharepoint.com/:u:/s/AnonymousShares/ET2O79W1QQlIjVbRNQ2tgMwBCf5c3oncVo5QDOgSr5Tq9w?e=Q0T1co) for what the History data looks like
 
-** Update: Now underway in this PR https://github.com/Baton-donation/app/pull/3 
+**Update: Now underway in this PR https://github.com/Baton-donation/app/pull/3 
 
 ## TobiiDynavox - Communicator 
 
