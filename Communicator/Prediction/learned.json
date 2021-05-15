@@ -1,0 +1,20 @@
+
+{
+	"contact-specific" : 
+	{
+		"contact-model-weights" : {},
+		"enabled" : true,
+		"min-weight" : 9.999999717180685e-010,
+		"weight-decay-exponent" : 0.009999999776482582
+	},
+	"overall" : 
+	{
+		"use-learned-parameters" : false
+	},
+	"prefix-probability" : 
+	{
+		"enabled" : true,
+		"num-words" : 10,
+		"rolling-mean" : 0.001000000047497451
+	}
+}
