@@ -71,6 +71,7 @@ See file in the repo with this name. There are other files. Note - these are phr
 * PRC defined this format many years ago. More on its structure here: https://aacinstitute.org/language-sample-collection-in-aac/ - https://eric.ed.gov/?id=ED441300 
 * Its really not designed for this kind of collection. More like every hit. Its going to take quite a lot of parsing for it to be useful. For example this is hello world - and being corrected then spoken. You would have to look for SPE commands - and what preceded it until you hit a DEL or CLEAR command. 
 * See LAM-example.txt in this repo for a full example. 
+* see https://github.com/CoughDrop/coughdrop/blob/master/lib/stats.rb#L1217 for a parser that @whitmer started. Needs testing and iterating 
 
 ```
         ### CAUTION ###
