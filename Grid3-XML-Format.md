@@ -97,7 +97,9 @@ A command with additional settings can have parameters:
   - `movecaret`: Moves the caret position (e.g., "0")
 
 #### `Settings.RestAll`
-- Parameters: None
+- Parameters:
+  - `indicatorenabled`: Enables or disables an indicator (e.g., "1" for enabled)
+  - `action`: Specifies the action to perform (e.g., "Toggle")
 
 #### `Action.InsertText`
 - Parameters:
