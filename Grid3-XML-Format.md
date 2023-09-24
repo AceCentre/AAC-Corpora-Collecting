@@ -69,7 +69,7 @@ A command without parameters looks like the following:
 <Command ID="Jump.Back" />
 ```
 
-#### Command with Parameters
+### Command with Parameters
 
 A command with additional settings can have parameters:
 
@@ -80,17 +80,38 @@ A command with additional settings can have parameters:
 </Command>
 ```
 
-#### Common Commands
+### Common Commands and Parameters
 
-- AutoContent.Activate: Unknown purpose
-- Jump.To: Navigates to a different board
-- Jump.Back: Returns to the previous board
-- Action.Speak: Activates the speech output
-- Settings.RestAll: Resets all settings
-- Action.InsertText: Inserts text into the message window
-- Action.DeleteWord: Deletes the last word in the message window
-- Action.Clear: Clears the message window
-- Action.Letter: Inserts a single letter into the message window
+#### `AutoContent.Activate`
+- Parameters: Unknown
+
+#### `Jump.To`
+- Parameters: Unknown
+
+#### `Jump.Back`
+- Parameters: None
+
+#### `Action.Speak`
+- Parameters:
+  - `unit`: Specifies what to speak (e.g., "All")
+  - `movecaret`: Moves the caret position (e.g., "0")
+
+#### `Settings.RestAll`
+- Parameters: None
+
+#### `Action.InsertText`
+- Parameters:
+  - `text`: Text to insert into the message window
+
+#### `Action.DeleteWord`
+- Parameters: None
+
+#### `Action.Clear`
+- Parameters: None
+
+#### `Action.Letter`
+- Parameters:
+  - `letter`: Letter to insert into the message window
 
 ---
 
