@@ -161,8 +161,10 @@ A command with additional settings can have parameters:
 #### `Jump.To`
 - Parameters: key 
 - Value "Grid file name" e.g. "Places" found within the .gridset bundle
-- e.g. ``<Parameter Key="grid">Quantity</Parameter>`` is a Jump to the Grid "Quantity" page
 
+```xml
+<Parameter Key="grid">Quantity</Parameter>`` is a Jump to the Grid "Quantity" page
+```
 
 #### `Jump.Back`
 - Parameters: None
