@@ -8,10 +8,7 @@ The grid files are part of a `.gridset` zipped archive. Renaming the file to `.z
 
 - **Grids/**: Directory where each XML grid file resides. E.g., `Grids/About me/grid.xml`
 - **Settings0/**: Directory containing settings and styles for the grid.
-
-#### FileMap.xml
-
-An XML file that maps grid XML files and their associated dynamic files.
+- **FileMap.xml** An XML file that maps grid XML files and their associated dynamic files.
 
 ```xml
 <FileMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -27,9 +24,7 @@ An XML file that maps grid XML files and their associated dynamic files.
 </FileMap>
 ```
 
-settings.xml
-
-Contains settings related to the gridset.
+- **settings.xml** Contains settings related to the gridset.
 
 ```xml
 <GridSetSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -37,9 +32,7 @@ Contains settings related to the gridset.
 </GridSetSettings>
 ```
 
-style.xml
-
-Defines various styles that can be applied to cells.
+- **Styles/style.xml** Defines various styles that can be applied to cells.
 
 ```xml
 <StyleData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -47,22 +40,6 @@ Defines various styles that can be applied to cells.
 </StyleData>
 ```
 
-### Style in Cell
-Styles are referenced within cells to determine their appearance.
-
-
-```xml
-<Cell X="7" Y="1">
-  <Content>
-    <!-- ... -->
-    <Style>
-      <BasedOnStyle>Actions category style</BasedOnStyle>
-    </Style>
-  </Content>
-</Cell>
-```
-
-BasedOnStyle: Refers to a predefined style from style.xml.
 
 ## Grid XML File Format Documentation
 
@@ -127,13 +104,27 @@ Cells are the primary elements that make up a grid. They are defined using the <
 
 ##### Properties of Cell
 
-- Caption: The text displayed on the button.
+- **Caption**: The text displayed on the button.
 
 ```xml
 <Caption>Hello</Caption>
 ```
 
-Other properties like Image, Sound, Action, etc., can also be defined within each <Cell> element.
+- **Style**: Styles are referenced within cells to determine their appearance.
+
+
+```xml
+<Cell X="7" Y="1">
+  <Content>
+    <!-- ... -->
+    <Style>
+      <BasedOnStyle>Actions category style</BasedOnStyle>
+    </Style>
+  </Content>
+</Cell>
+```
+
+BasedOnStyle: Refers to a predefined style from style.xml.
 
 ## Commands
 
