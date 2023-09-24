@@ -101,6 +101,10 @@ Cells are the primary elements that make up a grid. They are defined using the <
   - Values range from 1 to 8.
   - A cell can be in any of these blocks.
   - If not specified, the attribute is not needed for that particular cell.
+  
+```xml
+<Cell X="7" Y="1" ScanBlock="2">
+```
 
 ##### Properties of Cell
 
