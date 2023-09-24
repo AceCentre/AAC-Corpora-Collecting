@@ -1,3 +1,68 @@
+# Grid 3 File Docs
+
+## Gridset Archive Structure
+
+The grid files are part of a `.gridset` zipped archive. Renaming the file to `.zip` allows you to unzip and explore its contents.
+
+### Directory Structure
+
+- **Grids/**: Directory where each XML grid file resides. E.g., `Grids/About me/grid.xml`
+- **Settings0/**: Directory containing settings and styles for the grid.
+
+#### FileMap.xml
+
+An XML file that maps grid XML files and their associated dynamic files.
+
+```xml
+<FileMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- Entry for each grid XML file and its dynamic files -->
+  <Entries>
+    <Entry StaticFile="Grids\Treats\grid.xml">
+      <DynamicFiles>
+        <File>Grids\Treats\wordlist-0-0.gridbmp</File>
+      </DynamicFiles>
+    </Entry>
+    <!-- ... -->
+  </Entries>
+</FileMap>
+```
+
+settings.xml
+
+Contains settings related to the gridset.
+
+```xml
+<GridSetSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- Various settings like Appearance, StartGrid, Description, etc. -->
+</GridSetSettings>
+```
+
+style.xml
+
+Defines various styles that can be applied to cells.
+
+```xml
+<StyleData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- Definition of different styles -->
+</StyleData>
+```
+
+### Style in Cell
+Styles are referenced within cells to determine their appearance.
+
+
+```xml
+<Cell X="7" Y="1">
+  <Content>
+    <!-- ... -->
+    <Style>
+      <BasedOnStyle>Actions category style</BasedOnStyle>
+    </Style>
+  </Content>
+</Cell>
+
+BasedOnStyle: Refers to a predefined style from style.xml.
+
 ## Grid XML File Format Documentation
 
 ### Overview
@@ -98,7 +163,10 @@ A command with additional settings can have parameters:
 - Parameters: Unknown
 
 #### `Jump.To`
-- Parameters: Unknown
+- Parameters: key 
+- Value "Grid file name" e.g. "Places" found within the .gridset bundle
+- e.g. ``<Parameter Key="grid">Quantity</Parameter>`` is a Jump to the Grid "Quantity" page
+
 
 #### `Jump.Back`
 - Parameters: None
