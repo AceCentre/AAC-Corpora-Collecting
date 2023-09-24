@@ -34,7 +34,9 @@ Grid XML files are used to describe the layout and content of AAC (Augmentative 
   </RowDefinitions>
   ```
 
-#### Buttons (Cells)
+### Buttons (Cells)
+
+#### Overview
 
 - **Cells**: Contains the definitions for each button or cell.
 
@@ -46,16 +48,26 @@ Grid XML files are used to describe the layout and content of AAC (Augmentative 
     <!-- Repeat for each cell -->
   </Cells>
   ```
+#### Attributes of Cell
 
-##### Cell Properties
+Cells are the primary elements that make up a grid. They are defined using the <Cell> tag and can have various attributes.
 
-- **Caption**: The text displayed on the button.
+- X and Y: These define the cell's position in the grid, corresponding to its column (X) and row (Y).
+- ScanBlock:Optional attribute to define which scan block the cell belongs to.
+   - There is a maximum of 8 scan blocks per page.
+  - Values range from 1 to 8.
+  - A cell can be in any of these blocks.
+  - If not specified, the attribute is not needed for that particular cell.
 
-  ```xml
-  <Caption>Hello</Caption>
-  ```
+##### Properties of Cell
 
-- Other properties like `Image`, `Sound`, `Action`, etc., can also be defined within each `<Cell>` element.
+- Caption: The text displayed on the button.
+
+```xml
+<Caption>Hello</Caption>
+```
+
+Other properties like Image, Sound, Action, etc., can also be defined within each <Cell> element.
 
 ## Commands
 
