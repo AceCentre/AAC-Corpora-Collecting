@@ -114,6 +114,15 @@ Cells are the primary elements that make up a grid. They are defined using the <
 <Caption>Hello</Caption>
 ```
 
+- **CaptionAndImage**: It has a image and caption. Image relates to a ``[symbol-library]filename.extension`` (NB: The Grid licences Widgit)
+
+```
+ <CaptionAndImage>
+          <Caption>Keyboard</Caption>
+          <Image>[grid3x]keyboard.wmf</Image>
+        </CaptionAndImage>
+```
+
 - **Style**: Styles are referenced within cells to determine their appearance.
 
 
