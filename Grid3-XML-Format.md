@@ -60,6 +60,7 @@ Styles are referenced within cells to determine their appearance.
     </Style>
   </Content>
 </Cell>
+```
 
 BasedOnStyle: Refers to a predefined style from style.xml.
 
