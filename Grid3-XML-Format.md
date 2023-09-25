@@ -56,10 +56,12 @@ Each style is documented here for then referencing ib each pages grid.xml e.g
 ```xml
  <Styles>	
     <Style Key="Workspace">
-      <BackColour>#FFFFFFFF</BackColour>
-      <BorderColour>#FFFFFF00</BorderColour>
-      <FontColour>#000000FF</FontColour>
-      <FontName>Sassoon Infant</FontName>
+          <BackColour>#B8312FFF</BackColour>
+          <TileColour>#FAC51CFF</TileColour>
+          <BorderColour>#FEEFE7FF</BorderColour>
+          <FontColour>#FDE8A4FF</FontColour>
+          <FontName>Dosis</FontName>
+          <FontSize>40</FontSize>
     </Style>
     <!-- ,, -->
 ```
@@ -288,7 +290,21 @@ Cells are the primary elements that make up a grid. They are defined using the <
 </Cell>
 ```
 
-BasedOnStyle: Refers to a predefined style from style.xml.
+- **BasedOnStyle**: Refers to a predefined style from style.xml.
+
+You can extend the style of a cell like this
+
+```xml
+	<Style>
+	  <BasedOnStyle>Verbs</BasedOnStyle>
+	  <BackColour>#B8312FFF</BackColour>
+	  <TileColour>#FAC51CFF</TileColour>
+	  <BorderColour>#FEEFE7FF</BorderColour>
+	  <FontColour>#FDE8A4FF</FontColour>
+	  <FontName>Dosis</FontName>
+	  <FontSize>40</FontSize>
+	</Style>
+```
 
 ## Commands
 
