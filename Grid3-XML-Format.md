@@ -227,8 +227,24 @@ Grid XML files are used to describe the layout and content of AAC (Augmentative 
 </ScanBlockAudioDescriptions>
 ```
 
-- **WordList:** Defines an AutoContent Type cell, which may contain word lists or other dynamic content.
+- **WordList:** Defines an AutoContent Type cell, which may contain word lists or other dynamic content. 
 
+```xml
+<WordList>
+    <Items>
+      <WordListItem>
+        <Text>
+          <s Image="[widgit]widgit rebus\h\hello.emf">
+            <r>Hello</r>
+          </s>
+        </Text>
+        <Image>[widgit]widgit rebus\h\hello.emf</Image>
+        <PartOfSpeech>Unknown</PartOfSpeech>
+      </WordListItem>
+	  <!--  etc  -->
+    </Items>
+  </WordList>
+```
 
 ### Buttons (Cells)
 
@@ -271,9 +287,9 @@ Cells are the primary elements that make up a grid. They are defined using the <
 
 ```
  <CaptionAndImage>
-          <Caption>Keyboard</Caption>
-          <Image>[grid3x]keyboard.wmf</Image>
-        </CaptionAndImage>
+	  <Caption>Keyboard</Caption>
+	  <Image>[grid3x]keyboard.wmf</Image>
+	</CaptionAndImage>
 ```
 
 - **Style**: Styles are referenced within cells to determine their appearance.
@@ -304,6 +320,22 @@ You can extend the style of a cell like this
 	  <FontName>Dosis</FontName>
 	  <FontSize>40</FontSize>
 	</Style>
+```
+
+Note on WordList cells. These should have a ContentType = AutoContent ContentSubType = WodList
+
+```xml
+<Cell X="3" Y="2" ScanBlock="2">
+      <Content>
+        <ContentType>AutoContent</ContentType>
+        <ContentSubType>WordList</ContentSubType>
+        <CaptionAndImage xsi:nil="true" />
+        <Style>
+          <BasedOnStyle>Auto content</BasedOnStyle>
+          <BorderColour>#2C82C9FF</BorderColour>
+        </Style>
+      </Content>
+    </Cell>
 ```
 
 ## Commands
