@@ -35,7 +35,7 @@ The grid files are part of a `.gridset` zipped archive. Renaming the file to `.z
 </FileMap>
 ```
 
-- **settings.xml** Contains settings related to the gridset.
+- **Settings0/ettings.xml** Contains settings related to the gridset.
 
 ```xml
 <GridSetSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -43,12 +43,25 @@ The grid files are part of a `.gridset` zipped archive. Renaming the file to `.z
 </GridSetSettings>
 ```
 
-- **Styles/style.xml** Defines various styles that can be applied to cells.
+- **Settings/Styles/style.xml** Defines various styles that can be applied to cells.
 
 ```xml
 <StyleData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <!-- Definition of different styles -->
 </StyleData>
+```
+
+Each style is documented here for then referencing ib each pages grid.xml e.g
+
+```xml
+ <Styles>	
+    <Style Key="Workspace">
+      <BackColour>#FFFFFFFF</BackColour>
+      <BorderColour>#FFFFFF00</BorderColour>
+      <FontColour>#000000FF</FontColour>
+      <FontName>Sassoon Infant</FontName>
+    </Style>
+    <!-- ,, -->
 ```
 
 
