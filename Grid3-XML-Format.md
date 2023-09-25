@@ -1,5 +1,16 @@
 # Grid 3 File Docs
 
+## Introduction
+
+This document provides a detailed technical guide to the structure and functionalities of Grid 3 files, focusing on the .gridset format used in Augmentative and Alternative Communication (AAC) boards. This guide is targeted at developers, researchers, and advanced users.
+
+## Terminology
+
+- Gridset: A zipped archive containing grid files and settings.
+- AAC: Augmentative and Alternative Communication.
+- Cell: A button on an AAC board that can have various functionalities.
+- ScanBlock: A group of cells that are scanned together.
+
 ## Gridset Archive Structure
 
 The grid files are part of a `.gridset` zipped archive. Renaming the file to `.zip` allows you to unzip and explore its contents.
@@ -47,6 +58,100 @@ The grid files are part of a `.gridset` zipped archive. Renaming the file to `.z
 
 Grid XML files are used to describe the layout and content of AAC (Augmentative and Alternative Communication) boards used in the Grid software. They contain information about the grid layout (rows and columns), buttons (also called cells), and their properties.
 
+
+#### Full Example 
+
+```xml
+<Grid xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!--Background colour - hex code -->
+  <BackgroundColour>#E2EDF8FF</BackgroundColour>
+  <!-- Unique ID -->
+  <GridGuid>e631d2c5-cc2c-49b3-b6bb-eb1c81af84af</GridGuid>
+  <!-- This defines the  column size -->
+  <ColumnDefinitions>
+    <ColumnDefinition />
+    <ColumnDefinition />
+    <ColumnDefinition />
+    <ColumnDefinition />
+    <ColumnDefinition />
+    <ColumnDefinition />
+    <ColumnDefinition />
+    <ColumnDefinition />
+    <ColumnDefinition />
+  </ColumnDefinitions>
+  <!-- This defines the row or column size -->
+  <RowDefinitions>
+    <RowDefinition />
+    <RowDefinition />
+    <RowDefinition />
+    <RowDefinition />
+    <RowDefinition />
+    <RowDefinition />
+    <RowDefinition />
+  </RowDefinitions>
+  <!-- AutoContentCommands - Need some more testing to detail this  -->
+  <AutoContentCommands>
+    <AutoContentCommandCollection AutoContentType="Prediction">
+      <Commands>
+        <Command ID="AutoContent.Activate">
+          <Parameter Key="autocontenttype">Prediction</Parameter>
+        </Command>
+      </Commands>
+    </AutoContentCommandCollection>
+  </AutoContentCommands>
+  <Cells>
+    <Cell>
+      <Content>
+        <Commands>
+          <Command ID="Jump.To">
+            <Parameter Key="grid">Special</Parameter>
+          </Command>
+        </Commands>
+        <CaptionAndImage>
+          <Caption>Special</Caption>
+          <Image>[grid3x]star.wmf</Image>
+        </CaptionAndImage>
+        <Style>
+          <BasedOnStyle>Navigation category style</BasedOnStyle>
+        </Style>
+      </Content>
+    </Cell>
+    <!--etc-->
+  </Cells>
+  <!-- this gives highlight description text for each Block in the block scan. NB: max of 8 -->
+  <ScanBlockAudioDescriptions>
+    <ScanBlockAudioDescription>
+      <ScanBlock>1</ScanBlock>
+    </ScanBlockAudioDescription>
+    <ScanBlockAudioDescription>
+      <ScanBlock>2</ScanBlock>
+    </ScanBlockAudioDescription>
+    <ScanBlockAudioDescription>
+      <ScanBlock>3</ScanBlock>
+    </ScanBlockAudioDescription>
+    <ScanBlockAudioDescription>
+      <ScanBlock>4</ScanBlock>
+    </ScanBlockAudioDescription>
+    <ScanBlockAudioDescription>
+      <ScanBlock>5</ScanBlock>
+    </ScanBlockAudioDescription>
+    <ScanBlockAudioDescription>
+      <ScanBlock>6</ScanBlock>
+    </ScanBlockAudioDescription>
+    <ScanBlockAudioDescription>
+      <ScanBlock>7</ScanBlock>
+    </ScanBlockAudioDescription>
+    <ScanBlockAudioDescription>
+      <ScanBlock>8</ScanBlock>
+    </ScanBlockAudioDescription>
+  </ScanBlockAudioDescriptions>
+  <!-- Wordlists - this is an AutoContent Type cell. More info to come here>
+  <WordList>
+    <Items />
+  </WordList>
+</Grid>
+```
+
 ### Structure
 
 - **Root Element**: The root element usually encapsulates the entire XML document and contains all other elements.
@@ -56,6 +161,12 @@ Grid XML files are used to describe the layout and content of AAC (Augmentative 
     <!-- Child elements go here -->
   </Root>
   ```
+  
+#### Elements and Attributes
+
+- **Grid Element**
+- **BackgroundColour**: Specifies the background color of the grid using a hex code. E.g., `<BackgroundColour>#E2EDF8FF</BackgroundColour>`
+- **GridGuid**: A unique identifier for the grid. E.g., `<GridGuid>e631d2c5-cc2c-49b3-b6bb-eb1c81af84af</GridGuid>`
 
 #### Layout Information
 
@@ -76,6 +187,33 @@ Grid XML files are used to describe the layout and content of AAC (Augmentative 
     <!-- Repeat for each row -->
   </RowDefinitions>
   ```
+
+- **AutoContentCommands**:  A section for commands related to auto content like predictions.
+
+```xml
+<AutoContentCommands>
+  <AutoContentCommandCollection AutoContentType="Prediction">
+    <Commands>
+      <Command ID="AutoContent.Activate">
+        <Parameter Key="autocontenttype">Prediction</Parameter>
+      </Command>
+    </Commands>
+  </AutoContentCommandCollection>
+</AutoContentCommands>
+```
+
+- **ScanBlockAudioDescriptions**: Provides audio descriptions for each scan block. The maximum number of scan blocks is 8.
+```xml
+<ScanBlockAudioDescriptions>
+  <ScanBlockAudioDescription>
+    <ScanBlock>1</ScanBlock>
+  </ScanBlockAudioDescription>
+  <!-- ... -->
+</ScanBlockAudioDescriptions>
+```
+
+- **WordList:** Defines an AutoContent Type cell, which may contain word lists or other dynamic content.
+
 
 ### Buttons (Cells)
 
@@ -201,6 +339,8 @@ A command with additional settings can have parameters:
 #### `Action.Letter`
 - Parameters:
   - `letter`: Letter to insert into the message window
+  
+
 
 ---
 
