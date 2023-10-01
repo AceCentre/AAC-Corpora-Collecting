@@ -1,4 +1,4 @@
-Exports are .sps files
+Exports are .sps files. these are sqlite files. no encryption. 
 
 
 here is the sttructre
