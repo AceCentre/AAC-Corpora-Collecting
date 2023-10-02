@@ -3,6 +3,7 @@ Exports are .sps files. these are sqlite files. no encryption.
 
 here is the sttructre
 
+ERD Diagram here : https://dbdiagram.io/d/TobiiDynavoxSnap-651a8680ffbf5169f0da45d5
 
 ```sql
 
