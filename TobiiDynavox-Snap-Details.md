@@ -178,3 +178,149 @@ COMMIT;
 
 ```
 
+DBML 
+```dbml
+Table CommandSequence {
+  Id int [pk, not null]
+  SerializedCommands varchar
+  ButtonId int
+}
+
+Table ButtonPlacement {
+  Id int [pk, not null]
+  GridPosition varchar
+  Visible int
+  ButtonId int
+  PageLayoutId int
+}
+
+Table PageLayout {
+  Id int [pk, not null]
+  PageLayoutSetting varchar
+  PageId int
+}
+
+Table PageExtra {
+  Id int [pk, not null, ref: > Page.Id]
+  AccessedAt bigint
+}
+
+Table PageSetData {
+  Id int [pk, not null]
+  Identifier varchar
+  Data blob
+  RefCount int [default: 0]
+}
+
+Table SyncData {
+  UniqueId varchar(36) [pk, not null]
+  Type int
+  Timestamp bigint
+  SyncHash int
+  Deleted int
+  Description varchar
+}
+
+Table Synchronization {
+  Id int [pk, not null]
+  SyncServerIdentifier varchar
+  PageSetTimestamp bigint
+  PageSetSyncHash int
+}
+
+Table Page {
+  Id int [pk, not null]
+  UniqueId varchar(36)
+  Title varchar
+  PageType int
+  Language varchar
+  BackgroundColor int
+  ContentTag varchar
+  Timestamp bigint
+  SyncHash int
+  LibrarySymbolId int
+  PageSetImageId int
+  GridDimension varchar
+  MessageBarVisible int
+}
+
+Table PageSetProperties {
+  Id int [pk, not null]
+  ContentIdentifier varchar
+  ContentVersion varchar
+  SchemaVersion varchar
+  UniqueId varchar(36)
+  Language varchar
+  Timestamp bigint
+  SyncHash int
+  DefaultHomePageUniqueId varchar(36)
+  SerializedHomePageUniqueIdOverrides blob
+  DefaultKeyboardPageUniqueId varchar(36)
+  SerializedKeyboardPageUniqueIdOverrides blob
+  ToolBarUniqueId varchar(36)
+  DashboardUniqueId varchar(36)
+  MessageBarUniqueId varchar(36)
+  MessageBarVisible int
+  ToolBarVisible int
+  FriendlyName varchar
+  Description varchar
+  IconImageId int
+  SerializedPreferredGridDimensions varchar
+  GridDimension varchar
+  SmartSymLayout int
+  FontFamily varchar
+  FontSize float
+  FontStyle int
+  PageBackgroundColor int
+  MessageBarBackgroundColor int
+  ToolBarBackgroundColor int
+  MessageWindowTextColor int
+  MessageWindowFontSize float
+}
+
+Table ButtonPageLink {
+  Id int [pk, not null]
+  ButtonId int [not null, ref: > Button.Id]
+  PageUniqueId varchar(36) [not null]
+}
+
+Table Button {
+  Id int [pk, not null]
+  Language varchar
+  Label varchar
+  LabelOwnership int
+  Message varchar
+  AudioCue varchar
+  ImageOwnership int
+  LabelColor int
+  BackgroundColor int
+  BorderColor int
+  BorderThickness float
+  FontSize float
+  FontFamily varchar
+  FontStyle int
+  SmartSymLayout int
+  CommandFlags int
+  ContentType int
+  ContentTag varchar
+  LibrarySymbolId int
+  PageSetImageId int
+  SerializedContentTypeHandler varchar
+  MessageRecordingId int
+  AudioCueRecordingId int
+  PageId int
+  UseMessageRecording int
+  UseAudioCueRecording int
+  UniqueId varchar(36)
+}
+
+// Relationships
+Ref: CommandSequence.ButtonId > Button.Id
+Ref: ButtonPlacement.ButtonId > Button.Id
+Ref: ButtonPlacement.PageLayoutId > PageLayout.Id
+Ref: PageLayout.PageId > Page.Id
+Ref: PageExtra.Id > Page.Id
+Ref: ButtonPageLink.ButtonId > Button.Id
+Ref: Button.PageId > Page.Id
+
+```
