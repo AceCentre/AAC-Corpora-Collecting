@@ -402,7 +402,3 @@ A command with additional settings can have parameters:
   - `letter`: Letter to insert into the message window
   
 
-
----
-
-This is a basic outline and may not cover all the intricacies of the Grid XML format. Additional elements and attributes could be present based on the specific features used in the Grid software.
