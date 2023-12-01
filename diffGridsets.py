@@ -15,20 +15,16 @@ def parse_xml(file_path):
 
 def extract_wordlist_items(xml_root):
 	wordlist_items = []
-	for wordlist in xml_root.findall(".//WordList/Items/WordListItem/Text"):
-		# Extracting text content from WordList items
+	for wordlist in xml_root.findall(".//WordList/Items/WordListItem/Text/r"):
 		if wordlist.text:
 			wordlist_items.append(wordlist.text)
 	return wordlist_items
 
 def extract_cell_contents(xml_root):
 	texts = []
-	# Existing code to extract CaptionAndImage/Caption
 	for cell in xml_root.findall(".//Cell/Content/CaptionAndImage/Caption"):
 		if cell.text:
 			texts.append(cell.text)
-
-	# Add WordList items to texts
 	texts.extend(extract_wordlist_items(xml_root))
 	return texts
 
@@ -42,18 +38,10 @@ def analyze_texts(text_list):
 		word_count.update(words)
 	return word_count, phrase_count
 
-def compare_gridsets(gridset1, gridset2):
-	# Extract cell contents
-	cells1 = extract_cell_contents(parse_xml(gridset1))
-	cells2 = extract_cell_contents(parse_xml(gridset2))
+def compare_texts(texts1, texts2):
+	word_count1, phrase_count1 = analyze_texts(texts1)
+	word_count2, phrase_count2 = analyze_texts(texts2)
 
-	# Analyze texts
-	word_count1, phrase_count1 = analyze_texts(cells1)
-	word_count2, phrase_count2 = analyze_texts(cells2)
-
-	# Comparison logic here
-	# e.g., unique words, shared words, etc.
-	
 	unique_words1 = set(word_count1.keys())
 	unique_words2 = set(word_count2.keys())
 	shared_words = unique_words1.intersection(unique_words2)
@@ -74,6 +62,14 @@ def compare_gridsets(gridset1, gridset2):
 
 	return comparison_results
 
+def find_xml_files(directory):
+	xml_files = []
+	for root, dirs, files in os.walk(directory):
+		for file in files:
+			if file.endswith(".xml"):
+				xml_files.append(os.path.join(root, file))
+	return xml_files
+
 def main():
 	parser = argparse.ArgumentParser(description='Compare the language content of two .gridset files.')
 	parser.add_argument('gridset1', type=str, help='Path to the first .gridset file')
@@ -81,14 +77,23 @@ def main():
 
 	args = parser.parse_args()
 
-	# Extract gridsets
 	extract_gridset_contents(args.gridset1, "extracted1")
 	extract_gridset_contents(args.gridset2, "extracted2")
 
-	# Perform comparison
-	results = compare_gridsets("extracted1/grid.xml", "extracted2/grid.xml")
+	grid_xml_files_1 = find_xml_files("extracted1")
+	grid_xml_files_2 = find_xml_files("extracted2")
 
-	# Display results
+	all_texts_1 = []
+	all_texts_2 = []
+
+	for file in grid_xml_files_1:
+		all_texts_1.extend(extract_cell_contents(parse_xml(file)))
+
+	for file in grid_xml_files_2:
+		all_texts_2.extend(extract_cell_contents(parse_xml(file)))
+
+	results = compare_texts(all_texts_1, all_texts_2)
+
 	for key, value in results.items():
 		print(f"{key}: {value}")
 
