@@ -350,6 +350,43 @@ Note on WordList cells. These should have a ContentType = AutoContent ContentSub
     </Cell>
 ```
 
+
+## WordList
+
+### Overview
+
+`WordList` elements are used to define a list of words or phrases within a grid. They are typically found within `Cell` elements and are used to provide a dynamic list of vocabulary items.
+
+### Structure
+
+- **WordList**: The root element for the word list.
+  - **Items**: Container for all the items in the word list.
+    - **WordListItem**: Individual item within the word list.
+      - **Text**: Contains the textual representation of the item.
+        - **s**: An element that may include an image path and encloses the raw text of the item.
+          - **r**: The raw text of the item, representing the word or phrase.
+      - **Image**: Path to an image representing the item, typically in a symbol library.
+      - **PartOfSpeech**: Category of the part of speech for the item (e.g., noun, verb).
+
+### Example XML Structure
+
+```xml
+<WordList>
+    <Items>
+        <WordListItem>
+            <Text>
+                <s Image="[symbol-library]image-path">
+                    <r>word</r>
+                </s>
+            </Text>
+            <Image>[symbol-library]image-path</Image>
+            <PartOfSpeech>Part of speech category</PartOfSpeech>
+        </WordListItem>
+        <!-- Additional WordListItems... -->
+    </Items>
+</WordList>
+
+
 ## Commands
 
 Commands are actions that a cell can execute when activated. They are defined under the `<Commands>` tag within a `<Content>` tag in a cell.
