@@ -265,12 +265,18 @@ Grid XML files are used to describe the layout and content of AAC (Augmentative 
 Cells are the primary elements that make up a grid. They are defined using the <Cell> tag and can have various attributes.
 
 - X and Y: These define the cell's position in the grid, corresponding to its column (X) and row (Y).
-- ScanBlock:Optional attribute to define which scan block the cell belongs to.
+- ScanBlock: Optional attribute to define which scan block the cell belongs to.
    - There is a maximum of 8 scan blocks per page.
   - Values range from 1 to 8.
   - A cell can be in any of these blocks.
   - If not specified, the attribute is not needed for that particular cell.
-  
+- ColumnSpan and RowSpan: Define how many columns or rows the cell spans. 
+
+- AutoContentType, ID, Key: Used in various elements and commands to define their specific types and identifiers.
+- Height: Attribute in RowDefinitions/RowDefinition, specifies the height of rows.
+
+
+
 ```xml
 <Cell X="7" Y="1" ScanBlock="2">
 ```
@@ -285,6 +291,8 @@ Cells are the primary elements that make up a grid. They are defined using the <
 
 - **CaptionAndImage**: It has a image and caption. Image relates to a ``[symbol-library]filename.extension`` (NB: The Grid licences Widgit)
 
+- AudioDescription: Found within CaptionAndImage, provides audio descriptions for cells.
+
 ```
  <CaptionAndImage>
 	  <Caption>Keyboard</Caption>
@@ -294,6 +302,8 @@ Cells are the primary elements that make up a grid. They are defined using the <
 
 - **Style**: Styles are referenced within cells to determine their appearance.
 
+- BasedOnStyle: Refers to a predefined style from style.xml.
+- BackColour, TileColour, BorderColour, FontColour, FontName, FontSize: Define various aspects of the cell's appearance.
 
 ```xml
 <Cell X="7" Y="1">
@@ -324,6 +334,8 @@ You can extend the style of a cell like this
 
 Note on WordList cells. These should have a ContentType = AutoContent ContentSubType = WodList
 
+- WordList/Items: Specifies items within a word list, crucial for grids that rely on dynamic content.
+
 ```xml
 <Cell X="3" Y="2" ScanBlock="2">
       <Content>
@@ -341,14 +353,19 @@ Note on WordList cells. These should have a ContentType = AutoContent ContentSub
 ## Commands
 
 Commands are actions that a cell can execute when activated. They are defined under the `<Commands>` tag within a `<Content>` tag in a cell.
-
+	
 ### Simple Command
 
+Commands associated with a cell are defined under the <Commands> tag within a <Content> tag.
 A command without parameters looks like the following:
 
 ```xml
 <Command ID="Jump.Back" />
 ```
+
+### AutoContent Commands
+
+- AutoContentCommands/AutoContentCommandCollection: Defines a collection of auto content commands, such as predictions or word lists.
 
 ### Command with Parameters
 
