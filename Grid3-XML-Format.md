@@ -37,11 +37,29 @@ The grid files are part of a `.gridset` zipped archive. Renaming the file to `.z
 
 - **Settings0/ettings.xml** Contains settings related to the gridset.
 
+### Purpose
+
+The `Settings0/settings.xml` file in a Grid 3 gridset contains various settings related to the gridset, including the identification of the home grid.
+
+### Structure
+
+The file is an XML document with multiple settings, one of which is the `StartGrid`. This setting specifies the home grid, which is the default starting point or main screen for the gridset.
+
+### Key Element: `StartGrid`
+
+- **`<StartGrid>`**: This element holds the name of the home grid. It's the grid that the user sees when they first access the gridset or return to the main menu.
+
+### Example
+
+An example excerpt from a `Settings0/settings.xml` file:
+
 ```xml
 <GridSetSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <!-- Various settings like Appearance, StartGrid, Description, etc. -->
+  <!-- ... other settings ... -->
+  <StartGrid>01 CORE pg1</StartGrid>
+  <!-- ... other settings ... -->
 </GridSetSettings>
-```
+
 
 - **Settings/Styles/style.xml** Defines various styles that can be applied to cells.
 
@@ -65,7 +83,10 @@ Each style is documented here for then referencing ib each pages grid.xml e.g
     </Style>
     <!-- ,, -->
 ```
+In this example, the <StartGrid> element indicates that "01 CORE pg1" is the home grid for this gridset.
 
+### Usage in the Application
+In the gridset comparison application, this file is parsed to determine the starting grid for navigation path calculations. The home grid is essential for understanding the user's journey through the gridset and for calculating the effort required to access different buttons or commands.
 
 ## Grid XML File Format Documentation
 
