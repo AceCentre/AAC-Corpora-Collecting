@@ -130,7 +130,7 @@ def find_path(home_grid, target_grid, navigation_map):
 					#print(f"Enqueuing next grid: {next_grid}")
 					queue.append((next_grid, path.copy()))
 
-	#print(f"No path found from {home_grid} to {target_grid}.")
+	# print(f"No path found from {home_grid} to {target_grid}.")
 	return []  # Return an empty list if no path is found
 
 
@@ -191,8 +191,9 @@ def calculate_grid_effort(grid_rows, grid_cols, total_visible_buttons, button_po
 	hits = len(path_to_button) if path_to_button else 1	 # Number of hits
 	
 	#print(f"Path from {home_grid} to {button_grid}: {path_to_button}, Hits: {hits}")
-
-	total_effort = button_size + field_size + prior_scan + distance + prior_effort
+	# Ignore scan
+	#total_effort = button_size + field_size + prior_scan + distance + prior_effort
+	total_effort = button_size + field_size + distance + prior_effort
 	return round(total_effort,2), hits
 
 
