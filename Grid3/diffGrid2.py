@@ -103,31 +103,36 @@ def find_path(home_grid, target_grid, navigation_map):
 	"""
 	# Edge case: If the target grid is the same as the home grid
 	if home_grid == target_grid:
+		print(f"Target grid '{target_grid}' is the same as home grid.")
 		return [home_grid]
-	
+
 	# Initialize BFS
 	visited = set()	 # Set to keep track of visited grids
 	queue = deque([(home_grid, [])])  # Queue for BFS, storing tuples of (current grid, path to current grid)
 
 	while queue:
 		current_grid, path = queue.popleft()
-		#print(f"Current Grid: {current_grid}, Path: {path}")  # Debugging
+		path.append(current_grid)  # Add the current grid to the path
 
+		print(f"Visiting: {current_grid}, Path so far: {path}")
 
 		if current_grid not in visited:
 			visited.add(current_grid)
-			path.append(current_grid)
 
 			# Check if we have reached the target grid
 			if current_grid == target_grid:
+				print(f"Found path to {target_grid}: {path}")
 				return path
 
 			# Enqueue all adjacent (navigable) grids
 			for next_grid in navigation_map.get(current_grid, []):
-				#print(f"Next Grid: {next_grid}")  # Debugging
-				queue.append((next_grid, path.copy()))
+				if next_grid not in visited:  # Avoid re-visiting grids
+					print(f"Enqueuing next grid: {next_grid}")
+					queue.append((next_grid, path.copy()))
 
+	print(f"No path found from {home_grid} to {target_grid}.")
 	return []  # Return an empty list if no path is found
+
 
 def calculate_button_coordinates(button_position, grid_rows, grid_cols, screen_dimensions):
 	"""
@@ -183,13 +188,13 @@ def calculate_grid_effort(grid_rows, grid_cols, total_visible_buttons, button_po
 	# Calculate the number of steps to the button's grid
 	path_to_button = find_path(home_grid, button_grid, navigation_map)
 	prior_effort = len(path_to_button) - 1 if path_to_button else 0
-	hits = len(path_to_button) - 1 if path_to_button else 0	 # Number of hits
+	hits = len(path_to_button) if path_to_button else 1	 # Number of hits
 	
 	
 	#print(f"Path from {home_grid} to {button_grid}: {path_to_button}, Hits: {hits}")
 
 	total_effort = button_size + field_size + prior_scan + distance + prior_effort
-	return total_effort, hits
+	return round(total_effort,2), hits
 
 
 def extract_cell_data(cell_element, grid_element, grid_name):
@@ -315,7 +320,6 @@ def extract_combined_cell_and_wordlist_contents(xml_root, grid_name, screen_dime
 				'CellType': 'WordList'
 			}
 			combined_contents.append(wordlist_data)
-			print(wordlist_data)
 	return combined_contents
 
 
@@ -335,6 +339,8 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid)
 		word_count.update(data['Text'].split())
 		phrase_count += 1 if len(data['Text'].split()) > 1 else 0
 		grid_position = data.get('GridPosition', (1, 1))  # Default to (1, 1) if not specified
+		path_to_button = find_path(home_grid, grid_name, navigation_map)
+		path_str = ' -> '.join(path_to_button)
 		
 		effort_score, hits = calculate_grid_effort(
 			len(root.findall(".//RowDefinitions/RowDefinition")),
@@ -358,7 +364,7 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid)
 			'position_y': data['Position'][1],
 			'xy': data['XY'],
 			'position': data['Position'],
-			'path': ' -> '.join(find_path(home_grid, grid_name, navigation_map)),
+			'path': path_str,
 			'cell_type': data['CellType']
 		})
 
