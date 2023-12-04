@@ -103,7 +103,7 @@ def find_path(home_grid, target_grid, navigation_map):
 	"""
 	# Edge case: If the target grid is the same as the home grid
 	if home_grid == target_grid:
-		print(f"Target grid '{target_grid}' is the same as home grid.")
+		#print(f"Target grid '{target_grid}' is the same as home grid.")
 		return [home_grid]
 
 	# Initialize BFS
@@ -114,23 +114,23 @@ def find_path(home_grid, target_grid, navigation_map):
 		current_grid, path = queue.popleft()
 		path.append(current_grid)  # Add the current grid to the path
 
-		print(f"Visiting: {current_grid}, Path so far: {path}")
+		#print(f"Visiting: {current_grid}, Path so far: {path}")
 
 		if current_grid not in visited:
 			visited.add(current_grid)
 
 			# Check if we have reached the target grid
 			if current_grid == target_grid:
-				print(f"Found path to {target_grid}: {path}")
+				#print(f"Found path to {target_grid}: {path}")
 				return path
 
 			# Enqueue all adjacent (navigable) grids
 			for next_grid in navigation_map.get(current_grid, []):
 				if next_grid not in visited:  # Avoid re-visiting grids
-					print(f"Enqueuing next grid: {next_grid}")
+					#print(f"Enqueuing next grid: {next_grid}")
 					queue.append((next_grid, path.copy()))
 
-	print(f"No path found from {home_grid} to {target_grid}.")
+	#print(f"No path found from {home_grid} to {target_grid}.")
 	return []  # Return an empty list if no path is found
 
 
@@ -189,7 +189,6 @@ def calculate_grid_effort(grid_rows, grid_cols, total_visible_buttons, button_po
 	path_to_button = find_path(home_grid, button_grid, navigation_map)
 	prior_effort = len(path_to_button) - 1 if path_to_button else 0
 	hits = len(path_to_button) if path_to_button else 1	 # Number of hits
-	
 	
 	#print(f"Path from {home_grid} to {button_grid}: {path_to_button}, Hits: {hits}")
 
