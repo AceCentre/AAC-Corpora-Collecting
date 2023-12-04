@@ -271,130 +271,190 @@ def get_home_grid_from_settings(settings_file):
 		return None
 
 
+def extract_combined_cell_and_wordlist_contents(xml_root, grid_name):
+	"""
+	Extracts a combined list of cell contents and wordlist items, along with additional details.
+
+	:param xml_root: The root of the XML tree.
+	:param grid_name: The name of the grid.
+	:return: A list of dictionaries, each containing details about a cell or wordlist item.
+	"""
+	combined_contents = []
+	wordlist_positions = []
+
+	# Extract text and positions from cells
+	for cell in xml_root.findall(".//Cell"):
+		cell_data = {}
+		cell_x = cell.get('X', '1')	 # Default to 1 if not specified
+		cell_y = cell.get('Y', '1')	 # Default to 1 if not specified
+		cell_position = f"({cell_x}, {cell_y})"
+		
+		# Check for wordlist cells
+		if cell.find(".//ContentSubType") is not None and cell.find(".//ContentSubType").text == "WordList":
+			wordlist_positions.append(cell_position)
+			continue  # Skip adding to combined_contents for now
+
+		text_element = cell.find(".//Content/Commands/Command[@ID='Action.InsertText']/Parameter[@Key='text']/p/s/r")
+		if text_element is not None and text_element.text:
+			cell_data['Text'] = text_element.text.strip()
+			cell_data['Position'] = cell_position
+			cell_data['PageName'] = grid_name
+			cell_data['CellType'] = 'Regular'
+			combined_contents.append(cell_data)
+
+	# Extract items from wordlists
+	for wordlist in xml_root.findall(".//WordList/Items/WordListItem/Text/r"):
+		if wordlist.text:
+			position = wordlist_positions.pop(0) if wordlist_positions else 'N/A'
+			wordlist_data = {
+				'Text': wordlist.text.strip(),
+				'Position': position,
+				'PageName': grid_name,
+				'CellType': 'WordList'
+			}
+			combined_contents.append(wordlist_data)
+
+	return combined_contents
+
+def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid):
+	"""
+	Process a single grid XML file and return cell data along with text analysis.
+	"""
+	root = parse_xml(file)
+	grid_name = get_grid_name_from_path(file)
+	texts = extract_cell_contents(root)
+	word_count, phrase_count = analyze_texts(texts)
+
+	cell_data_list = []
+	total_hits = 0
+	num_cells = 0
+
+	for cell in root.findall(".//Cell"):
+		cell_data = extract_cell_data(cell, root, grid_name)
+		if cell_data is None or cell_data['text'] == '':
+			continue
+
+		effort_score, hits = calculate_grid_effort(
+			cell_data['grid_rows'],
+			cell_data['grid_cols'],
+			cell_data['total_visible_buttons'],
+			cell_data['button_position'],
+			screen_dimensions,
+			home_grid,
+			cell_data['grid_name'],
+			navigation_map
+		)
+		total_hits += hits
+		num_cells += 1
+		
+		path_to_button = find_path(home_grid, cell_data['grid_name'], navigation_map)
+		path_str = ' -> '.join(path_to_button)
+		position_str = f"({cell_data['button_position'][0]}, {cell_data['button_position'][1]})"
+		
+		cell_type = "Wordlist Item" if "WordList" in cell.tag else "Regular Cell"
+
+		cell_data_list.append({
+			'text': cell_data['text'],
+			'effort_score': effort_score,
+			'hits': hits,
+			'grid_name': cell_data['grid_name'],
+			'position': position_str,
+			'path': path_str,
+			'cell_type': cell_type
+		})
+
+	return word_count, phrase_count, cell_data_list, total_hits, num_cells
+
+
 def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2):
-	word_counts_1, phrase_counts_1, effort_scores_1, cell_data_1 = [], [], [], []
-	word_counts_2, phrase_counts_2, effort_scores_2, cell_data_2 = [], [], [], []
-	total_hits_1 = 0
-	total_hits_2 = 0
-	total_words_1 = 0
-	total_words_2 = 0
-	num_cells_1 = 0
-	num_cells_2 = 0
+	# Initialize variables
+	word_counts_1, phrase_counts_1, effort_scores_1, cell_data_1, total_hits_1, num_cells_1 = Counter(), 0, [], [], 0, 0
+	word_counts_2, phrase_counts_2, effort_scores_2, cell_data_2, total_hits_2, num_cells_2 = Counter(), 0, [], [], 0, 0
 
-
-	# Process first gridset
+	# Process each file in gridset 1
 	for file in grid_xml_files_1:
-		root = parse_xml(file)
-		grid_name = get_grid_name_from_path(file)
-		texts = extract_cell_contents(root)
-		word_count, phrase_count = analyze_texts(texts)
-		word_counts_1.extend(word_count.elements())
-		phrase_counts_1.append(phrase_count)
+		word_count, phrase_count, cell_data, hits, num_cells = process_single_grid_file(
+			file, navigation_map1, screen_dimensions, home_grid1
+		)
+		word_counts_1.update(word_count)
+		phrase_counts_1 += phrase_count
+		effort_scores_1.extend([data['effort_score'] for data in cell_data])
+		cell_data_1.extend(cell_data)
+		total_hits_1 += hits
+		num_cells_1 += num_cells
 
-		for cell in root.findall(".//Cell"):
-			cell_data = extract_cell_data(cell, root, grid_name)
-			if cell_data is None:
-				continue
-			if cell_data['text'] == '':
-				#print(f"Blank or Unknown Grid: {ET.tostring(cell, encoding='unicode')}")
-				continue  # Skip this cell
-			effort_score, hits = calculate_grid_effort(
-				cell_data['grid_rows'],
-				cell_data['grid_cols'],
-				cell_data['total_visible_buttons'],
-				cell_data['button_position'],
-				screen_dimensions,
-				home_grid1,
-				cell_data['grid_name'],
-				navigation_map1
-			)
-			total_hits_1 += hits
-			num_cells_1 += 1
-			
-			#print(f"Button: {cell_data['text']}, Position: {cell_data['button_position']}, Grid: {cell_data['grid_name']}, Effort Score: {effort_score}")	# Debugging
-			effort_scores_1.append(effort_score)
-			cell_data_1.append((cell_data['text'], effort_score))
-
-	 # Process first gridset
+	# Process each file in gridset 2
 	for file in grid_xml_files_2:
-		root = parse_xml(file)
-		grid_name = get_grid_name_from_path(file)
-		texts = extract_cell_contents(root)
-		word_count, phrase_count = analyze_texts(texts)
-		word_counts_2.extend(word_count.elements())
-		phrase_counts_2.append(phrase_count)
-
-		for cell in root.findall(".//Cell"):
-			cell_data = extract_cell_data(cell, root, grid_name)
-			if cell_data is None:
-				continue			
-			if cell_data['text'] == '':
-				#print(f"Blank or Unknown Grid: {ET.tostring(cell, encoding='unicode')}")
-				continue  # Skip this cell
-			effort_score,hits = calculate_grid_effort(
-				cell_data['grid_rows'],
-				cell_data['grid_cols'],
-				cell_data['total_visible_buttons'],
-				cell_data['button_position'],
-				screen_dimensions,
-				home_grid1,
-				cell_data['grid_name'],
-				navigation_map2
-			)
-			total_hits_2 += hits
-			num_cells_2 += 1
-			
-			#print(f"Button: {cell_data['text']}, Position: {cell_data['button_position']}, Grid: {cell_data['grid_name']}, Effort Score: {effort_score}")	# Debugging
-			effort_scores_2.append(effort_score)
-			cell_data_2.append((cell_data['text'], effort_score))
+		word_count, phrase_count, cell_data, hits, num_cells = process_single_grid_file(
+			file, navigation_map2, screen_dimensions, home_grid2
+		)
+		word_counts_2.update(word_count)
+		phrase_counts_2 += phrase_count
+		effort_scores_2.extend([data['effort_score'] for data in cell_data])
+		cell_data_2.extend(cell_data)
+		total_hits_2 += hits
+		num_cells_2 += num_cells
 
 	# Calculate the total, unique, and shared words
-	total_words_1 = len(word_counts_1)
-	total_words_2 = len(word_counts_2)
 	unique_words_1 = set(word_counts_1)
 	unique_words_2 = set(word_counts_2)
 	shared_words = unique_words_1.intersection(unique_words_2)
 	exclusive_words_1 = unique_words_1 - shared_words
 	exclusive_words_2 = unique_words_2 - shared_words
-	average_hits_1 = total_hits_1 / num_cells_1 if num_cells_1 > 0 else 0
-	average_hits_2 = total_hits_2 / num_cells_2 if num_cells_2 > 0 else 0
 
-	
+	# Additional metrics
 	total_pages_1 = len(set(file for file in grid_xml_files_1))
-	total_buttons_1 = len(cell_data_1)
-	top_20_easiest_1 = sorted(cell_data_1, key=lambda x: x[1], reverse=True)[:20]
-
-
 	total_pages_2 = len(set(file for file in grid_xml_files_2))
+	total_buttons_1 = len(cell_data_1)
 	total_buttons_2 = len(cell_data_2)
-	top_20_easiest_2 = sorted(cell_data_2, key=lambda x: x[1], reverse=True)[:20]
-	top_20_easiest_1 = [(caption, round(score,2)) for caption, score in top_20_easiest_1]
-	top_20_easiest_2 = [(caption, round(score,2)) for caption, score in top_20_easiest_2]
+	top_20_easiest_1 = sorted(cell_data_1, key=lambda x: x['effort_score'])[:20]
+	top_20_easiest_2 = sorted(cell_data_2, key=lambda x: x['effort_score'])[:20]
 
-	# Now compare the data between the two gridsets
 	comparison_results = {
-		"Total Words in Gridset 1": total_words_1,
-		"Total Words in Gridset 2": total_words_2,
+		"Total Words in Gridset 1": sum(word_counts_1.values()),
+		"Total Words in Gridset 2": sum(word_counts_2.values()),
 		"Unique Words in Gridset 1": len(unique_words_1),
 		"Unique Words in Gridset 2": len(unique_words_2),
 		"Shared Words": len(shared_words),
 		"Exclusive Words in Gridset 1": len(exclusive_words_1),
 		"Exclusive Words in Gridset 2": len(exclusive_words_2),
-		"Phrases in Gridset 1": sum(phrase_counts_1),
-		"Phrases in Gridset 2": sum(phrase_counts_2),
+		"Phrases in Gridset 1": phrase_counts_1,
+		"Phrases in Gridset 2": phrase_counts_2,
 		"Total Pages in Gridset 1": total_pages_1,
 		"Total Pages in Gridset 2": total_pages_2,
 		"Total Buttons in Gridset 1": total_buttons_1,
 		"Total Buttons in Gridset 2": total_buttons_2,
-		"Average Hits in Gridset 1": average_hits_1,
-		"Average Hits in Gridset 2": average_hits_2,
-		"Top 20 Easiest Words/Phrases in Gridset 1": top_20_easiest_1,
-		"Top 20 Easiest Words/Phrases in Gridset 2": top_20_easiest_2,
+		"Average Hits in Gridset 1": total_hits_1 / num_cells_1 if num_cells_1 > 0 else 0,
+		"Average Hits in Gridset 2": total_hits_2 / num_cells_2 if num_cells_2 > 0 else 0,
+		"Top 20 Easiest Words/Phrases in Gridset 1": [x['text'] for x in top_20_easiest_1],
+		"Top 20 Easiest Words/Phrases in Gridset 2": [x['text'] for x in top_20_easiest_2],
 	}
 
 	return comparison_results
 
-import csv
+
+def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, home_grid):
+	# Initialize list for CSV data
+	csv_data = []
+
+	# Process grid files
+	for file in grid_xml_files:
+		_, _, cell_data, _, _ = process_single_grid_file(
+			file, navigation_map, screen_dimensions, home_grid
+		)
+		for data in cell_data:
+			csv_data.append({
+				'Word/Phrase': data['text'],
+				'Effort Score': data['effort_score'],
+				'Hits': data['hits'],
+				'Grid Name': data['grid_name'],
+				'Position': data['position'],
+				'Path': data['path'],
+				'Cell Type': data['cell_type']
+			})
+
+	return csv_data
+
 
 def save_to_csv(data, filename):
 	"""
@@ -408,57 +468,6 @@ def save_to_csv(data, filename):
 		writer.writeheader()
 		for row in data:
 			writer.writerow(row)
-
-def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, home_grid):
-	"""
-	Process each gridset and collect data for CSV.
-
-	:param grid_xml_files: List of XML file paths in the gridset.
-	:param navigation_map: Navigation map of the gridset.
-	:param screen_dimensions: Screen dimensions for effort score calculation.
-	:param home_grid: Home grid of the gridset.
-	:return: List of dictionaries with cell data.
-	"""
-	cell_data_list = []
-
-	for file in grid_xml_files:
-		root = parse_xml(file)
-		grid_name = get_grid_name_from_path(file)
-
-		for cell in root.findall(".//Cell"):
-			cell_data = extract_cell_data(cell, root, grid_name)  # Pass root as the second argument
-			if cell_data is None or cell_data['text'] == '':
-				continue
-
-			effort_score, hits = calculate_grid_effort(
-				cell_data['grid_rows'],
-				cell_data['grid_cols'],
-				cell_data['total_visible_buttons'],
-				cell_data['button_position'],
-				screen_dimensions,
-				home_grid,
-				cell_data['grid_name'],
-				navigation_map
-			)
-			
-			path_to_button = find_path(home_grid, cell_data['grid_name'], navigation_map)
-			path_str = ' -> '.join(path_to_button)
-
-			# Position in the format (Row, Column)
-			position_str = f"({cell_data['button_position'][0]}, {cell_data['button_position'][1]})"
-
-			cell_data_list.append({
-				'Word/Phrase': cell_data['text'],
-				'Grid Name': cell_data['grid_name'],
-				'Position': position_str,
-				'Path': path_str,
-				'Hits': hits,
-				'Effort Score': effort_score
-			})
-
-	return cell_data_list
-
-
 
 
 def main():
