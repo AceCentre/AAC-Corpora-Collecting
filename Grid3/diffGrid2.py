@@ -5,6 +5,8 @@ import argparse
 import math
 from collections import Counter
 from collections import deque
+import csv
+
 
 def parse_xml(file_path):
 	tree = ET.parse(file_path)
@@ -96,7 +98,7 @@ def parse_gridset_for_navigation(gridset_file):
 				grid_element = cell.find('..')	# Find the parent Grid element of the Cell				
 				grid_name = get_grid_name_from_path(gridset_file)
 				
-				#print(f"Adding navigation: {grid_name} -> {target_grid}")  # Debugging
+				#print(f"Adding navigation: {grid_name} -> {target_grid}")	# Debugging
 				if grid_name not in navigation_data:
 					navigation_data[grid_name] = []
 				navigation_data[grid_name].append(target_grid)
@@ -392,6 +394,72 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 
 	return comparison_results
 
+import csv
+
+def save_to_csv(data, filename):
+	"""
+	Save data to a CSV file.
+
+	:param data: List of dictionaries with cell data.
+	:param filename: Name of the CSV file to save.
+	"""
+	with open(filename, mode='w', newline='', encoding='utf-8') as file:
+		writer = csv.DictWriter(file, fieldnames=data[0].keys())
+		writer.writeheader()
+		for row in data:
+			writer.writerow(row)
+
+def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, home_grid):
+	"""
+	Process each gridset and collect data for CSV.
+
+	:param grid_xml_files: List of XML file paths in the gridset.
+	:param navigation_map: Navigation map of the gridset.
+	:param screen_dimensions: Screen dimensions for effort score calculation.
+	:param home_grid: Home grid of the gridset.
+	:return: List of dictionaries with cell data.
+	"""
+	cell_data_list = []
+
+	for file in grid_xml_files:
+		root = parse_xml(file)
+		grid_name = get_grid_name_from_path(file)
+
+		for cell in root.findall(".//Cell"):
+			cell_data = extract_cell_data(cell, root, grid_name)  # Pass root as the second argument
+			if cell_data is None or cell_data['text'] == '':
+				continue
+
+			effort_score, hits = calculate_grid_effort(
+				cell_data['grid_rows'],
+				cell_data['grid_cols'],
+				cell_data['total_visible_buttons'],
+				cell_data['button_position'],
+				screen_dimensions,
+				home_grid,
+				cell_data['grid_name'],
+				navigation_map
+			)
+			
+			path_to_button = find_path(home_grid, cell_data['grid_name'], navigation_map)
+			path_str = ' -> '.join(path_to_button)
+
+			# Position in the format (Row, Column)
+			position_str = f"({cell_data['button_position'][0]}, {cell_data['button_position'][1]})"
+
+			cell_data_list.append({
+				'Word/Phrase': cell_data['text'],
+				'Grid Name': cell_data['grid_name'],
+				'Position': position_str,
+				'Path': path_str,
+				'Hits': hits,
+				'Effort Score': effort_score
+			})
+
+	return cell_data_list
+
+
+
 
 def main():
 	parser = argparse.ArgumentParser(description='Compare the language content of two .gridset files.')
@@ -423,6 +491,12 @@ def main():
 	# Extract and process grid XML files
 	grid_xml_files_1 = find_xml_files("extracted1")
 	grid_xml_files_2 = find_xml_files("extracted2")
+
+	gridset1_data = process_gridset_for_csv(grid_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
+	save_to_csv(gridset1_data, 'gridset1_data.csv')
+
+	gridset2_data = process_gridset_for_csv(grid_xml_files_2, navigation_map2, screen_dimensions, home_grid2)
+	save_to_csv(gridset2_data, 'gridset2_data.csv')
 
 	# Compare gridsets
 	results = compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2)
