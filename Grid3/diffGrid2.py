@@ -26,24 +26,8 @@ def extract_gridset_contents(file_path, extract_to):
 	with zipfile.ZipFile(file_path, 'r') as zip_ref:
 		zip_ref.extractall(extract_to)
 
-def extract_cell_contents(xml_root):
-	texts = []
-	for cell in xml_root.findall(".//Cell"):
-		text_element = cell.find(".//Content/Commands/Command[@ID='Action.InsertText']/Parameter[@Key='text']/p/s/r")
-		if text_element is not None and text_element.text:
-			text = text_element.text.strip()
-			if text:  # Ensure the text is not empty
-				texts.append(text)
-	return texts
-
-def extract_wordlist_items(xml_root):
-	wordlist_items = []
-	for wordlist in xml_root.findall(".//WordList/Items/WordListItem/Text/r"):
-		if wordlist.text:
-			wordlist_items.append(wordlist.text)
-	return wordlist_items
-
 def analyze_texts(text_list):
+	# NB: Not really using any more but maybe useful in the future. 
 	word_count = Counter()
 	phrase_count = 0
 	for text in text_list:
@@ -271,23 +255,29 @@ def get_home_grid_from_settings(settings_file):
 		return None
 
 
-def extract_combined_cell_and_wordlist_contents(xml_root, grid_name):
+def extract_combined_cell_and_wordlist_contents(xml_root, grid_name, screen_dimensions):
 	"""
 	Extracts a combined list of cell contents and wordlist items, along with additional details.
 
 	:param xml_root: The root of the XML tree.
 	:param grid_name: The name of the grid.
+	:param screen_dimensions: Tuple (width, height) of the screen.
 	:return: A list of dictionaries, each containing details about a cell or wordlist item.
 	"""
 	combined_contents = []
 	wordlist_positions = []
 
+	# Extract grid rows and columns
+	grid_rows = len(xml_root.findall(".//RowDefinitions/RowDefinition"))
+	grid_cols = len(xml_root.findall(".//ColumnDefinitions/ColumnDefinition"))
+
 	# Extract text and positions from cells
 	for cell in xml_root.findall(".//Cell"):
 		cell_data = {}
-		cell_x = cell.get('X', '1')	 # Default to 1 if not specified
-		cell_y = cell.get('Y', '1')	 # Default to 1 if not specified
-		cell_position = f"({cell_x}, {cell_y})"
+		cell_x = int(cell.get('X', '1'))  # Default to 1 if not specified
+		cell_y = int(cell.get('Y', '1'))  # Default to 1 if not specified
+		cell_data['GridPosition'] = (cell_x, cell_y)  # Add this line
+		cell_position = calculate_button_coordinates((cell_x, cell_y), grid_rows, grid_cols, screen_dimensions)
 		
 		# Check for wordlist cells
 		if cell.find(".//ContentSubType") is not None and cell.find(".//ContentSubType").text == "WordList":
@@ -316,55 +306,48 @@ def extract_combined_cell_and_wordlist_contents(xml_root, grid_name):
 
 	return combined_contents
 
+
 def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid):
-	"""
-	Process a single grid XML file and return cell data along with text analysis.
-	"""
 	root = parse_xml(file)
 	grid_name = get_grid_name_from_path(file)
-	texts = extract_cell_contents(root)
-	word_count, phrase_count = analyze_texts(texts)
 
+	combined_contents = extract_combined_cell_and_wordlist_contents(root, grid_name, screen_dimensions)
+
+	word_count = Counter()
+	phrase_count = 0
 	cell_data_list = []
 	total_hits = 0
 	num_cells = 0
 
-	for cell in root.findall(".//Cell"):
-		cell_data = extract_cell_data(cell, root, grid_name)
-		if cell_data is None or cell_data['text'] == '':
-			continue
-
+	for data in combined_contents:
+		word_count.update(data['Text'].split())
+		phrase_count += 1 if len(data['Text'].split()) > 1 else 0
+		grid_position = data.get('GridPosition', (1, 1))  # Default to (1, 1) if not specified
+		
 		effort_score, hits = calculate_grid_effort(
-			cell_data['grid_rows'],
-			cell_data['grid_cols'],
-			cell_data['total_visible_buttons'],
-			cell_data['button_position'],
+			len(root.findall(".//RowDefinitions/RowDefinition")),
+			len(root.findall(".//ColumnDefinitions/ColumnDefinition")),
+			len(root.findall(".//Cell")),
+			grid_position,
 			screen_dimensions,
 			home_grid,
-			cell_data['grid_name'],
+			grid_name,
 			navigation_map
 		)
 		total_hits += hits
 		num_cells += 1
-		
-		path_to_button = find_path(home_grid, cell_data['grid_name'], navigation_map)
-		path_str = ' -> '.join(path_to_button)
-		position_str = f"({cell_data['button_position'][0]}, {cell_data['button_position'][1]})"
-		
-		cell_type = "Wordlist Item" if "WordList" in cell.tag else "Regular Cell"
 
 		cell_data_list.append({
-			'text': cell_data['text'],
+			'text': data['Text'],
 			'effort_score': effort_score,
 			'hits': hits,
-			'grid_name': cell_data['grid_name'],
-			'position': position_str,
-			'path': path_str,
-			'cell_type': cell_type
+			'grid_name': grid_name,
+			'position': data['Position'],
+			'path': ' -> '.join(find_path(home_grid, grid_name, navigation_map)),
+			'cell_type': data['CellType']
 		})
 
 	return word_count, phrase_count, cell_data_list, total_hits, num_cells
-
 
 def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2):
 	# Initialize variables
