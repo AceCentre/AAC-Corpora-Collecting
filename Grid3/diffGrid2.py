@@ -150,7 +150,7 @@ def calculate_button_coordinates(button_position, grid_rows, grid_cols, screen_d
 	x = (col - 0.5) * cell_width
 	y = (row - 0.5) * cell_height
 
-	return x, y
+	return round(x,2), round(y,2)
 
 def calculate_grid_effort(grid_rows, grid_cols, total_visible_buttons, button_position, screen_dimensions, home_grid, button_grid, navigation_map):
 	"""
@@ -266,6 +266,7 @@ def extract_combined_cell_and_wordlist_contents(xml_root, grid_name, screen_dime
 	"""
 	combined_contents = []
 	wordlist_positions = []
+	wordlist_grid_positions = []
 
 	# Extract grid rows and columns
 	grid_rows = len(xml_root.findall(".//RowDefinitions/RowDefinition"))
@@ -276,34 +277,45 @@ def extract_combined_cell_and_wordlist_contents(xml_root, grid_name, screen_dime
 		cell_data = {}
 		cell_x = int(cell.get('X', '1'))  # Default to 1 if not specified
 		cell_y = int(cell.get('Y', '1'))  # Default to 1 if not specified
-		cell_data['GridPosition'] = (cell_x, cell_y)  # Add this line
 		cell_position = calculate_button_coordinates((cell_x, cell_y), grid_rows, grid_cols, screen_dimensions)
 		
 		# Check for wordlist cells
 		if cell.find(".//ContentSubType") is not None and cell.find(".//ContentSubType").text == "WordList":
 			wordlist_positions.append(cell_position)
-			continue  # Skip adding to combined_contents for now
+			wordlist_grid_positions.append((cell_x, cell_y))
+			continue
 
+		# Handle regular cells
 		text_element = cell.find(".//Content/Commands/Command[@ID='Action.InsertText']/Parameter[@Key='text']/p/s/r")
 		if text_element is not None and text_element.text:
 			cell_data['Text'] = text_element.text.strip()
 			cell_data['Position'] = cell_position
+			cell_data['XY'] = (cell_x, cell_y)
 			cell_data['PageName'] = grid_name
 			cell_data['CellType'] = 'Regular'
 			combined_contents.append(cell_data)
 
+	# Skip wordlist processing if no WordList ContentSubType cells are found
+	if not wordlist_positions:
+		return combined_contents
+
 	# Extract items from wordlists
-	for wordlist in xml_root.findall(".//WordList/Items/WordListItem/Text/r"):
-		if wordlist.text:
+	for wordlist_item in xml_root.findall(".//WordList/Items/WordListItem"):
+		word_texts = wordlist_item.findall(".//Text//r")
+		full_text = ' '.join([word_text.text.strip() for word_text in word_texts if word_text.text and word_text.text.strip()])
+
+		if full_text:
 			position = wordlist_positions.pop(0) if wordlist_positions else 'N/A'
+			grid_position = wordlist_grid_positions.pop(0) if wordlist_grid_positions else 'N/A'
 			wordlist_data = {
-				'Text': wordlist.text.strip(),
+				'Text': full_text,
 				'Position': position,
+				'XY': grid_position,
 				'PageName': grid_name,
 				'CellType': 'WordList'
 			}
 			combined_contents.append(wordlist_data)
-
+			print(wordlist_data)
 	return combined_contents
 
 
@@ -342,6 +354,9 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid)
 			'effort_score': effort_score,
 			'hits': hits,
 			'grid_name': grid_name,
+			'position_x': data['Position'][0],
+			'position_y': data['Position'][1],
+			'xy': data['XY'],
 			'position': data['Position'],
 			'path': ' -> '.join(find_path(home_grid, grid_name, navigation_map)),
 			'cell_type': data['CellType']
@@ -431,7 +446,9 @@ def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, h
 				'Effort Score': data['effort_score'],
 				'Hits': data['hits'],
 				'Grid Name': data['grid_name'],
-				'Position': data['position'],
+				'Actual Position X': data['position_x'],
+				'Actual Position Y': data['position_y'],
+				'XY': data['xy'],
 				'Path': data['path'],
 				'Cell Type': data['cell_type']
 			})
