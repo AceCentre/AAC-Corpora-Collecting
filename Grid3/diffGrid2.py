@@ -410,6 +410,33 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 
 	return comparison_results
 
+def analyze_single_gridset(grid_xml_files, navigation_map, screen_dimensions, home_grid):
+	word_counts, phrase_counts, cell_data, total_hits, num_cells = Counter(), 0, [], 0, 0
+
+	# Process each file in the gridset
+	for file in grid_xml_files:
+		word_count, phrase_count, cells, hits, cells_count = process_single_grid_file(file, navigation_map, screen_dimensions, home_grid)
+		word_counts.update(word_count)
+		phrase_counts += phrase_count
+		cell_data.extend(cells)
+		total_hits += hits
+		num_cells += cells_count
+
+	unique_words = set(word_counts)
+	total_pages = len(set(file for file in grid_xml_files))
+	total_buttons = len(cell_data)
+	top_20_easiest = sorted(cell_data, key=lambda x: x['effort_score'])[:20]
+
+	return {
+		"Total Words": sum(word_counts.values()),
+		"Unique Words": len(unique_words),
+		"Phrases": phrase_counts,
+		"Total Pages": total_pages,
+		"Total Buttons": total_buttons,
+		"Average Hits": total_hits / num_cells if num_cells > 0 else 0,
+		"Top 20 Easiest Words/Phrases": [x['text'] for x in top_20_easiest]
+	}
+
 
 def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, home_grid):
 	# Initialize list for CSV data
@@ -478,52 +505,62 @@ def find_unique_words(grid_data1, grid_data2):
 def main():
 	parser = argparse.ArgumentParser(description='Compare the language content of two .gridset files.')
 	parser.add_argument('gridset1', type=str, help='Path to the first .gridset file')
-	parser.add_argument('gridset2', type=str, help='Path to the second .gridset file')
+	parser.add_argument('gridset2', nargs='?', type=str, help='Path to the second .gridset file')
 	parser.add_argument('--gridset1home', type=str, help='Override home grid name for the first gridset', default=None)
 	parser.add_argument('--gridset2home', type=str, help='Override home grid name for the second gridset', default=None)
 
 	args = parser.parse_args()
-
-	extract_gridset_contents(args.gridset1, "extracted1")
-	extract_gridset_contents(args.gridset2, "extracted2")
-
-	# Extract home grid names from settings files of each gridset
-	home_grid1 = args.gridset1home or get_home_grid_from_settings("extracted1/Settings0/settings.xml")
-	home_grid2 = args.gridset2home or get_home_grid_from_settings("extracted2/Settings0/settings.xml")
-	
 	screen_dimensions = (1920, 1080)  # Define screen dimensions
-	
-	# Build navigation maps and find relevant XML files for each gridset
+
+	home_grid1 = args.gridset1home or get_home_grid_from_settings("extracted1/Settings0/settings.xml")
+	extract_gridset_contents(args.gridset1, "extracted1")
 	navigation_map1, relevant_xml_files_1 = build_navigation_map_and_find_relevant_files(os.path.join("extracted1", "Grids", home_grid1, "grid.xml"))
-	navigation_map2, relevant_xml_files_2 = build_navigation_map_and_find_relevant_files(os.path.join("extracted2",	 "Grids", home_grid2, "grid.xml"))
+
 	
-	# Process and save CSV data for each gridset
-	gridset1_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
-	save_to_csv(gridset1_data, 'gridset1_data.csv')
+	if args.gridset2:	
+		extract_gridset_contents(args.gridset2, "extracted2")
 
-	gridset2_data = process_gridset_for_csv(relevant_xml_files_2, navigation_map2, screen_dimensions, home_grid2)
-	save_to_csv(gridset2_data, 'gridset2_data.csv')
+		# Extract home grid names from settings files of each gridset
+	
+		home_grid2 = args.gridset2home or get_home_grid_from_settings("extracted2/Settings0/settings.xml")
+		
+		# Build navigation maps and find relevant XML files for each gridset
+		navigation_map2, relevant_xml_files_2 = build_navigation_map_and_find_relevant_files(os.path.join("extracted2",	 "Grids", home_grid2, "grid.xml"))
+	
+		# Process and save CSV data for each gridset
+		gridset1_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
+		save_to_csv(gridset1_data, 'gridset1_data.csv')
 
-	deduplicated_words1 = deduplicate_dicts(gridset1_data)
-	save_to_csv(deduplicated_words1, 'gridset1_dedup_data.csv')
+		gridset2_data = process_gridset_for_csv(relevant_xml_files_2, navigation_map2, screen_dimensions, home_grid2)
+		save_to_csv(gridset2_data, 'gridset2_data.csv')
 
-	deduplicated_words2 = deduplicate_dicts(gridset2_data)
-	save_to_csv(deduplicated_words2, 'gridset2_dedup_data.csv')
+		deduplicated_words1 = deduplicate_dicts(gridset1_data)
+		save_to_csv(deduplicated_words1, 'gridset1_dedup_data.csv')
 
-	gridset1_unique = find_unique_words(deduplicated_words1, deduplicated_words2)
-	save_to_csv(gridset1_unique, 'gridset1unique_data.csv')
+		deduplicated_words2 = deduplicate_dicts(gridset2_data)
+		save_to_csv(deduplicated_words2, 'gridset2_dedup_data.csv')
 
-	gridset2_unique = find_unique_words(deduplicated_words2, deduplicated_words1)
-	save_to_csv(gridset2_unique, 'gridset2unique_data.csv')
+		gridset1_unique = find_unique_words(deduplicated_words1, deduplicated_words2)
+		save_to_csv(gridset1_unique, 'gridset1unique_data.csv')
+
+		gridset2_unique = find_unique_words(deduplicated_words2, deduplicated_words1)
+		save_to_csv(gridset2_unique, 'gridset2unique_data.csv')
+
+		# Compare gridsets
+		results = compare_gridsets(relevant_xml_files_1, relevant_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2)
 
 
+	else:
+		# Compare gridsets
+		gridset_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
+		save_to_csv(gridset_data, 'gridset_data.csv')
 
-	# Compare gridsets
-	results = compare_gridsets(relevant_xml_files_1, relevant_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2)
-
-	# Print results
-	for key, value in results.items():
-		print(f"{key}: {value}")
+		# Analyze single gridset
+		results = analyze_single_gridset(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
+		
+		# Print results
+		for key, value in results.items():
+			print(f"{key}: {value}")
 
 if __name__ == "__main__":
 	main()
