@@ -1,5 +1,19 @@
 import sqlite3
 
+def save_to_csv(data, filename):
+	"""
+	Save data to a CSV file.
+
+	:param data: List of dictionaries with cell data.
+	:param filename: Name of the CSV file to save.
+	"""
+	with open(filename, mode='w', newline='', encoding='utf-8') as file:
+		writer = csv.DictWriter(file, fieldnames=data[0].keys())
+		writer.writeheader()
+		for row in data:
+			writer.writerow(row)
+
+
 def connect_to_database(file_path):
 	""" Connect to the SQLite database and return a connection object. """
 	return sqlite3.connect(file_path)
