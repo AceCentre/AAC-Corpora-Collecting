@@ -1,4 +1,5 @@
 import sqlite3
+import argparse
 
 def save_to_csv(data, filename):
 	"""
@@ -94,8 +95,13 @@ def process_snap_gridset(file_path):
 	
 	return statistics
 
+def main():
+	parser = argparse.ArgumentParser(description='Analyse the language content of Snap SPS files.')
+	parser.add_argument('snap', type=str, help='Path to the first .sps file')
+	args = parser.parse_args()
 
-# Main logic for processing a Snap gridset
-snap_file_path = 'path_to_snap_gridset.db'	# Replace with actual file path
-snap_stats = process_snap_gridset(snap_file_path)
-print(snap_stats)
+	# Main logic for processing a Snap gridset
+	snap_stats = process_snap_gridset(args.snap)
+
+if __name__ == "__main__":
+	main()
