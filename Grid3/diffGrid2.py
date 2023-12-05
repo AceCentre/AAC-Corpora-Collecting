@@ -558,9 +558,9 @@ def main():
 		# Analyze single gridset
 		results = analyze_single_gridset(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
 		
-		# Print results
-		for key, value in results.items():
-			print(f"{key}: {value}")
+	# Print results
+	for key, value in results.items():
+		print(f"{key}: {value}")
 
 if __name__ == "__main__":
 	main()
