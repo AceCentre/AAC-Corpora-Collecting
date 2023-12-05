@@ -1,0 +1,133 @@
+Word/Phrase,Effort Score,Hits,Grid Name,Actual Position X,Actual Position Y,XY,Path,Cell Type,count
+wait a minute,4.26,4,08x LEISURE outdoors expanded TEEN,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 08a LEISURE activity index TEEN -> 08x LEISURE outdoors core TEEN -> 08x LEISURE outdoors expanded TEEN,WordList,44
+Yesterday I ...,4.26,4,10 NEWS expanded TEEN,685.71,324.0,"(2, 3)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 10 NEWS core TEEN -> 10 NEWS expanded TEEN,WordList,1
+Do you remember ...,4.26,4,10 NEWS expanded TEEN,411.43,324.0,"(2, 2)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 10 NEWS core TEEN -> 10 NEWS expanded TEEN,WordList,1
+skittle,9.26,9,08g PLAY ball expanded,411.43,756.0,"(4, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08g PLAY ball core -> 08g PLAY ball expanded,Regular,1
+there is a problem,4.26,4,07x DAILY LIFE comfort expanded TEEN,411.43,540.0,"(3, 2)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE comfort TEEN -> 07x DAILY LIFE comfort expanded TEEN,WordList,25
+that's private,4.26,4,07x DAILY LIFE comfort expanded TEEN,960.0,324.0,"(2, 4)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE comfort TEEN -> 07x DAILY LIFE comfort expanded TEEN,WordList,24
+armband,4.26,4,15i TOPICS Sports Clothes,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15i TOPICS Clothes pg1 -> 15i TOPICS Sports Clothes,Regular,1
+27,5.26,5,22 NUMBERS expanded 21-40,137.14,1188.0,"(6, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+26,5.26,5,22 NUMBERS expanded 21-40,137.14,972.0,"(5, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+32,5.26,5,22 NUMBERS expanded 21-40,411.43,756.0,"(4, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+33,5.26,5,22 NUMBERS expanded 21-40,411.43,972.0,"(5, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+31,5.26,5,22 NUMBERS expanded 21-40,411.43,540.0,"(3, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+21,5.26,5,22 NUMBERS expanded 21-40,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,2
+29,5.26,5,22 NUMBERS expanded 21-40,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+30,5.26,5,22 NUMBERS expanded 21-40,411.43,324.0,"(2, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+40,5.26,5,22 NUMBERS expanded 21-40,685.71,972.0,"(5, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+36,5.26,5,22 NUMBERS expanded 21-40,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+39,5.26,5,22 NUMBERS expanded 21-40,685.71,756.0,"(4, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 21-40,Regular,1
+what time does it leave?,4.26,4,07x DAILY LIFE travel expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE travel TEEN -> 07x DAILY LIFE travel expanded TEEN,WordList,1
+what time does it arrive?,4.26,4,07x DAILY LIFE travel expanded TEEN,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE travel TEEN -> 07x DAILY LIFE travel expanded TEEN,WordList,1
+it's delayed,4.26,4,07x DAILY LIFE travel expanded TEEN,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE travel TEEN -> 07x DAILY LIFE travel expanded TEEN,WordList,1
+Dear,7.26,7,16e SCHOOL Stories Dear Zoo,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 16 EDUCATION Index pg 1 TEEN -> 16 SCHOOL Core Index pg1 -> 16e SCHOOL Stories Core -> 16e SCHOOL Stories Expanded -> 16e SCHOOL Stories Dear Zoo,Regular,1
+tomorrow,3.26,3,13a TIME pg1,960.0,324.0,"(2, 4)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1,Regular,1
+tonight,3.26,3,13a TIME pg1,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1,Regular,1
+today,3.26,3,13a TIME pg1,960.0,756.0,"(4, 4)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1,Regular,1
+Bear,7.26,7,16e SCHOOL Stories Bear Hunt,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 16 EDUCATION Index pg 1 TEEN -> 16 SCHOOL Core Index pg1 -> 16e SCHOOL Stories Core -> 16e SCHOOL Stories Expanded -> 16e SCHOOL Stories Bear Hunt,Regular,1
+PM,4.26,4,13d TIME telling the time words,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1 -> 13d TIME telling the time words,Regular,1
+AM,4.26,4,13d TIME telling the time words,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1 -> 13d TIME telling the time words,Regular,1
+funnel,9.26,9,08q PLAY sand expanded,685.71,756.0,"(4, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08q PLAY sand core -> 08q PLAY sand expanded,Regular,2
+Are,3.26,3,17c MESSAGES go,411.43,540.0,"(3, 2)",01 CORE pg1 TEEN -> 17a MESSAGES index -> 17c MESSAGES go,Regular,1
+aftershave,5.26,5,15h TOPICS Inside Bathroom more TEEN,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15h TOPICS Inside TEEN -> 15h TOPICS Inside Bathroom TEEN -> 15h TOPICS Inside Bathroom more TEEN,Regular,1
+Dumbledore,4.26,4,15o TOPICS Magic pg2,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15o TOPICS Magic pg1 -> 15o TOPICS Magic pg2,Regular,1
+Hagrid,4.26,4,15o TOPICS Magic pg2,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15o TOPICS Magic pg1 -> 15o TOPICS Magic pg2,Regular,1
+Hermione,4.26,4,15o TOPICS Magic pg2,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15o TOPICS Magic pg1 -> 15o TOPICS Magic pg2,Regular,1
+87,5.26,5,22 NUMBERS expanded 81-100,137.14,1188.0,"(6, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+92,5.26,5,22 NUMBERS expanded 81-100,411.43,756.0,"(4, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+86,5.26,5,22 NUMBERS expanded 81-100,137.14,972.0,"(5, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+81,5.26,5,22 NUMBERS expanded 81-100,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,2
+82,5.26,5,22 NUMBERS expanded 81-100,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+91,5.26,5,22 NUMBERS expanded 81-100,411.43,540.0,"(3, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+88,5.26,5,22 NUMBERS expanded 81-100,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+85,5.26,5,22 NUMBERS expanded 81-100,137.14,756.0,"(4, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+90,5.26,5,22 NUMBERS expanded 81-100,411.43,324.0,"(2, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+96,5.26,5,22 NUMBERS expanded 81-100,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+99,5.26,5,22 NUMBERS expanded 81-100,685.71,756.0,"(4, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 81-100,Regular,1
+stop,5.26,5,16e SCHOOL Stories Core,411.43,324.0,"(2, 2)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 16 EDUCATION Index pg 1 TEEN -> 16 SCHOOL Core Index pg1 -> 16e SCHOOL Stories Core,Regular,1
+like,5.26,5,16e SCHOOL Stories Core,685.71,324.0,"(2, 3)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 16 EDUCATION Index pg 1 TEEN -> 16 SCHOOL Core Index pg1 -> 16e SCHOOL Stories Core,Regular,1
+row,9.26,9,08b PLAY singing expanded,411.43,756.0,"(4, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08b PLAY singing core -> 08b PLAY singing expanded,Regular,2
+twinkle,9.26,9,08b PLAY singing expanded,137.14,756.0,"(4, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08b PLAY singing core -> 08b PLAY singing expanded,Regular,1
+Old,9.26,9,08b PLAY singing expanded,960.0,756.0,"(4, 4)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08b PLAY singing core -> 08b PLAY singing expanded,Regular,2
+my account number is,4.26,4,07x DAILY LIFE banking expanded TEEN,137.14,324.0,"(2, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE banking core TEEN -> 07x DAILY LIFE banking expanded TEEN,WordList,1
+my sort code is,4.26,4,07x DAILY LIFE banking expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE banking core TEEN -> 07x DAILY LIFE banking expanded TEEN,WordList,1
+cerebal,4.26,4,15 TOPICS health conditions TEEN,411.43,324.0,"(2, 2)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15k TOPICS Health TEEN -> 15 TOPICS health conditions TEEN,Regular,1
+illness,4.26,4,15 TOPICS health conditions TEEN,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15k TOPICS Health TEEN -> 15 TOPICS health conditions TEEN,Regular,1
+few,5.26,5,16b EDUCATION Maths Expanded TEEN,137.14,324.0,"(2, 1)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 16 EDUCATION Index pg 1 TEEN -> 16b EDUCATION Maths Core TEEN -> 16b EDUCATION Maths Expanded TEEN,Regular,2
+do you want to go out with me?,4.26,4,07x DAILY LIFE dating expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE dating core TEEN -> 07x DAILY LIFE dating expanded TEEN,WordList,1
+can I have your number?,4.26,4,07x DAILY LIFE dating expanded TEEN,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE dating core TEEN -> 07x DAILY LIFE dating expanded TEEN,WordList,1
+61,5.26,5,22 NUMBERS expanded 61-80,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,2
+62,5.26,5,22 NUMBERS expanded 61-80,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+64,5.26,5,22 NUMBERS expanded 61-80,137.14,540.0,"(3, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+71,5.26,5,22 NUMBERS expanded 61-80,411.43,540.0,"(3, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+80,5.26,5,22 NUMBERS expanded 61-80,685.71,972.0,"(5, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+68,5.26,5,22 NUMBERS expanded 61-80,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+65,5.26,5,22 NUMBERS expanded 61-80,137.14,756.0,"(4, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+70,5.26,5,22 NUMBERS expanded 61-80,411.43,324.0,"(2, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+76,5.26,5,22 NUMBERS expanded 61-80,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+78,5.26,5,22 NUMBERS expanded 61-80,685.71,540.0,"(3, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 61-80,Regular,1
+cut this please,4.26,4,08x LEISURE craft expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 08a LEISURE activity index TEEN -> 08n LEISURE craft core TEEN -> 08x LEISURE craft expanded TEEN,WordList,1
+post,3.26,3,15l TOPICS Outside,137.14,540.0,"(3, 1)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15l TOPICS Outside,Regular,1
+crumpet,4.26,4,15d TOPICS Food Breakfast,137.14,540.0,"(3, 1)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15d TOPICS Food Index -> 15d TOPICS Food Breakfast,Regular,1
+can I see the menu?,4.26,4,07x DAILY LIFE eating out expanded TEEN,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE eating out core TEEN -> 07x DAILY LIFE eating out expanded TEEN,WordList,1
+please can we have the bill,4.26,4,07x DAILY LIFE eating out expanded TEEN,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE eating out core TEEN -> 07x DAILY LIFE eating out expanded TEEN,WordList,1
+I need the toilet,4.26,4,07b DAILY LIFE toilet expanded TEEN,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07b DAILY LIFE toilet core TEEN -> 07b DAILY LIFE toilet expanded TEEN,WordList,1
+I'm going on a trip,4.26,4,08x LEISURE trips expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 08a LEISURE activity index TEEN -> 08x LEISURE trips core TEEN -> 08x LEISURE trips expanded TEEN,WordList,1
+2018,5.26,5,13c TIME date pg2,411.43,756.0,"(4, 2)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1 -> 13c TIME date pg1 -> 13c TIME date pg2,Regular,3
+this is easy,4.26,4,07h DAILY LIFE learning expanded TEEN,137.14,324.0,"(2, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07h DAILY TEEN learning core TEEN -> 07h DAILY LIFE learning expanded TEEN,WordList,1
+this is difficult,4.26,4,07h DAILY LIFE learning expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07h DAILY TEEN learning core TEEN -> 07h DAILY LIFE learning expanded TEEN,WordList,1
+can you write it down?,4.26,4,07h DAILY LIFE learning expanded TEEN,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07h DAILY TEEN learning core TEEN -> 07h DAILY LIFE learning expanded TEEN,WordList,1
+can you help me read it?,4.26,4,08x LEISURE reading expanded TEEN,685.71,540.0,"(3, 3)",01 CORE pg1 TEEN -> 08a LEISURE activity index TEEN -> 08X LEISURE reading core TEEN -> 08x LEISURE reading expanded TEEN,WordList,1
+bridge,8.26,8,08j PLAY trains core,685.71,1188.0,"(6, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08j PLAY trains core,Regular,2
+whisker,3.26,3,15a TOPICS Animals,960.0,108.0,"(1, 4)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15a TOPICS Animals,Regular,1
+identity,4.26,4,15 TOPICS mind TEEN,411.43,972.0,"(5, 2)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS mind TEEN,Regular,1
+testicles,4.26,4,15j TOPICS Body Parts Privates TEEN,411.43,756.0,"(4, 2)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15j TOPICS Body Parts TEEN -> 15j TOPICS Body Parts Privates TEEN,Regular,1
+spot,5.26,5,15k TOPICS Health Puberty more TEEN,685.71,324.0,"(2, 3)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15j TOPICS Body Parts TEEN -> 15k TOPICS Health Puberty TEEN -> 15k TOPICS Health Puberty more TEEN,Regular,1
+wax,5.26,5,15k TOPICS Health Puberty more TEEN,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15j TOPICS Body Parts TEEN -> 15k TOPICS Health Puberty TEEN -> 15k TOPICS Health Puberty more TEEN,Regular,1
+Who,3.26,3,17i MESSAGES you,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 17a MESSAGES index -> 17i MESSAGES you,Regular,2
+what shall we do?,4.26,4,08x LEISURE indoors expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 08a LEISURE activity index TEEN -> 08x LEISURE indoor core TEEN -> 08x LEISURE indoors expanded TEEN,WordList,1
+it's too hot,4.26,4,07c DAILY LIFE eat and drink expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07c DAILY LIFE eat and drink core TEEN -> 07c DAILY LIFE eat and drink expanded TEEN,WordList,1
+it's too cold,4.26,4,07c DAILY LIFE eat and drink expanded TEEN,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07c DAILY LIFE eat and drink core TEEN -> 07c DAILY LIFE eat and drink expanded TEEN,WordList,1
+please read my meal time plan,4.26,4,07c DAILY LIFE eat and drink expanded TEEN,685.71,540.0,"(3, 3)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07c DAILY LIFE eat and drink core TEEN -> 07c DAILY LIFE eat and drink expanded TEEN,WordList,1
+year,4.26,4,13b TIME days and months,960.0,108.0,"(1, 4)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1 -> 13b TIME days and months,Regular,1
+month,4.26,4,13b TIME days and months,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1 -> 13b TIME days and months,Regular,1
+October,4.26,4,13b TIME days and months,411.43,972.0,"(5, 2)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1 -> 13b TIME days and months,Regular,1
+November,4.26,4,13b TIME days and months,685.71,972.0,"(5, 3)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1 -> 13b TIME days and months,Regular,1
+calendar,4.26,4,13a TIME pg2,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 13a TIME pg1 -> 13a TIME pg2,Regular,1
+fever,8.26,8,15k TOPICS Health,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 15aa TOPICS index pg1 -> 15k TOPICS Health,Regular,2
+Microchips,3.26,3,15c TOPICS Jokes TEEN,411.43,324.0,"(2, 2)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15c TOPICS Jokes TEEN,Regular,1
+saucepan,4.26,4,07j DAILY LIFE cooking expanded TEEN,685.71,756.0,"(4, 3)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07j DAILY LIFE cooking core TEEN -> 07j DAILY LIFE cooking expanded TEEN,Regular,2
+do we have the ingredients?,4.26,4,07j DAILY LIFE cooking expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07j DAILY LIFE cooking core TEEN -> 07j DAILY LIFE cooking expanded TEEN,WordList,1
+is it ready?,4.26,4,07j DAILY LIFE cooking expanded TEEN,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07j DAILY LIFE cooking core TEEN -> 07j DAILY LIFE cooking expanded TEEN,WordList,1
+Room,7.26,7,16e SCHOOL Stories Room on the Broom,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 16 EDUCATION Index pg 1 TEEN -> 16 SCHOOL Core Index pg1 -> 16e SCHOOL Stories Core -> 16e SCHOOL Stories Expanded -> 16e SCHOOL Stories Room on the Broom,Regular,1
+14,4.26,4,22 NUMBERS expanded 1-20,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20,Regular,1
+19,4.26,4,22 NUMBERS expanded 1-20,685.71,972.0,"(5, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20,Regular,1
+13,4.26,4,22 NUMBERS expanded 1-20,411.43,1188.0,"(6, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20,Regular,1
+18,4.26,4,22 NUMBERS expanded 1-20,685.71,756.0,"(4, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20,Regular,1
+17,4.26,4,22 NUMBERS expanded 1-20,685.71,540.0,"(3, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20,Regular,1
+16,4.26,4,22 NUMBERS expanded 1-20,685.71,324.0,"(2, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20,Regular,1
+Peace,7.26,7,16e SCHOOL Stories Peace At Last,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 16 EDUCATION Index pg 1 TEEN -> 16 SCHOOL Core Index pg1 -> 16e SCHOOL Stories Core -> 16e SCHOOL Stories Expanded -> 16e SCHOOL Stories Peace At Last,Regular,1
+prime,4.26,4,15 TOPICS politics TEEN,137.14,756.0,"(4, 1)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS politics TEEN,Regular,1
+Greens,4.26,4,15 TOPICS politics TEEN,960.0,324.0,"(2, 4)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS politics TEEN,Regular,1
+budgie,4.26,4,15a TOPICS Animals Birds,685.71,324.0,"(2, 3)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15a TOPICS Animals -> 15a TOPICS Animals Birds,Regular,2
+not like that,4.26,4,07d DAILY TEEN washing expanded TEEN,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07d DAILY LIFE washing core TEEN -> 07d DAILY TEEN washing expanded TEEN,WordList,1
+that's too hot,4.26,4,07d DAILY TEEN washing expanded TEEN,685.71,540.0,"(3, 3)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07d DAILY LIFE washing core TEEN -> 07d DAILY TEEN washing expanded TEEN,WordList,1
+that's too cold,4.26,4,07d DAILY TEEN washing expanded TEEN,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07d DAILY LIFE washing core TEEN -> 07d DAILY TEEN washing expanded TEEN,WordList,1
+please dry my face,4.26,4,07d DAILY TEEN washing expanded TEEN,411.43,108.0,"(1, 2)",01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07d DAILY LIFE washing core TEEN -> 07d DAILY TEEN washing expanded TEEN,WordList,1
+play The Greatest Showman,6.26,6,23 APPS Alexa Music Album,685.71,324.0,"(2, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 23 APPS menu TEEN -> 23 APPS Alexa Home -> 23 APPS Alexa Music home -> 23 APPS Alexa Music Album,WordList,1
+51,5.26,5,22 NUMBERS expanded 41-60,411.43,540.0,"(3, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+60,5.26,5,22 NUMBERS expanded 41-60,685.71,972.0,"(5, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+41,5.26,5,22 NUMBERS expanded 41-60,137.14,108.0,"(1, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,2
+43,5.26,5,22 NUMBERS expanded 41-60,137.14,324.0,"(2, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+46,5.26,5,22 NUMBERS expanded 41-60,137.14,972.0,"(5, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+50,5.26,5,22 NUMBERS expanded 41-60,411.43,324.0,"(2, 2)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+45,5.26,5,22 NUMBERS expanded 41-60,137.14,756.0,"(4, 1)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+56,5.26,5,22 NUMBERS expanded 41-60,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+59,5.26,5,22 NUMBERS expanded 41-60,685.71,756.0,"(4, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+55,5.26,5,22 NUMBERS expanded 41-60,685.71,108.0,"(1, 3)",01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 18a SPELLING keyboards index -> 22 NUMBERS expanded 1-20 -> 22 NUMBERS expanded 41-60,Regular,1
+imam,3.26,3,15y TOPICS Religion,960.0,540.0,"(3, 4)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15y TOPICS Religion,Regular,1
+priest,3.26,3,15y TOPICS Religion,960.0,108.0,"(1, 4)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15y TOPICS Religion,Regular,2
+granthi,3.26,3,15y TOPICS Religion,960.0,972.0,"(5, 4)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15y TOPICS Religion,Regular,1
+monk,3.26,3,15y TOPICS Religion,960.0,756.0,"(4, 4)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15y TOPICS Religion,Regular,1
+rabbi,3.26,3,15y TOPICS Religion,960.0,324.0,"(2, 4)",01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15y TOPICS Religion,Regular,1
+wart,7.26,7,16e SCHOOL Stories Gruffalo,685.71,540.0,"(3, 3)",01 CORE pg1 TEEN -> 01 CORE pg2 TEEN -> 16 EDUCATION Index pg 1 TEEN -> 16 SCHOOL Core Index pg1 -> 16e SCHOOL Stories Core -> 16e SCHOOL Stories Expanded -> 16e SCHOOL Stories Gruffalo,Regular,1

@@ -5,6 +5,7 @@ import argparse
 import math
 from collections import Counter
 from collections import deque
+from collections import defaultdict
 import csv
 
 
@@ -21,76 +22,34 @@ def get_grid_name_from_path(file_path):
 		return parts[-2]  # Returns "00 child vocabulary"
 	return "Unknown"
 
+def build_navigation_map_and_find_relevant_files(start_file):
+	navigation_map = {}
+	relevant_files = set()
 
-def extract_gridset_contents(file_path, extract_to):
-	with zipfile.ZipFile(file_path, 'r') as zip_ref:
-		zip_ref.extractall(extract_to)
+	queue = deque([start_file])
+	while queue:
+		current_file = queue.popleft()
+		if os.path.exists(current_file):
+			tree = ET.parse(current_file)
+			root = tree.getroot()
+			grid_name = get_grid_name_from_path(current_file)
+			relevant_files.add(current_file)
 
-def analyze_texts(text_list):
-	# NB: Not really using any more but maybe useful in the future. 
-	word_count = Counter()
-	phrase_count = 0
-	for text in text_list:
-		words = text.split()
-		if len(words) > 1:
-			phrase_count += 1
-		word_count.update(words)
-	return word_count, phrase_count
-	
-def find_xml_files(directory):
-	xml_files = []
-	for root, dirs, files in os.walk(directory):
-		for file in files:
-			if file.endswith(".xml"):
-				xml_files.append(os.path.join(root, file))
-	return xml_files
+			for cell in root.findall('.//Cell'):
+				jump_to_command = cell.find(".//Commands/Command[@ID='Jump.To']/Parameter[@Key='grid']")
+				if jump_to_command is not None and jump_to_command.text:
+					target_grid = jump_to_command.text
+					if grid_name not in navigation_map:
+						navigation_map[grid_name] = []
+					navigation_map[grid_name].append(target_grid)
 
-def find_main_grid_xml(directory, start_grid_name):
-	"""
-	Construct the path to the main grid XML file based on the start grid name.
+					target_file = os.path.join(os.path.dirname(os.path.dirname(current_file)), target_grid, "grid.xml")
+					if target_file not in relevant_files and os.path.exists(target_file):
+						relevant_files.add(target_file)
+						queue.append(target_file)  # Continue the recursion by adding the new grid file to the queue
 
-	:param directory: The directory containing the extracted gridset files.
-	:param start_grid_name: The name of the start grid (from settings.xml).
-	:return: The path to the main grid XML file, or None if not found.
-	"""
-	expected_file_path = os.path.join(directory, "Grids", start_grid_name, "grid.xml")
+	return navigation_map, relevant_files
 
-	if os.path.exists(expected_file_path):
-		return expected_file_path
-	else:
-		return None
-
-
-def parse_gridset_for_navigation(gridset_file):
-	"""
-	Parse a gridset file to extract navigation data.
-
-	:param gridset_file: Path to the gridset file (XML format).
-	:return: A dictionary where keys are grid names and values are lists of navigable target grids.
-	"""
-	navigation_data = {}
-	try:
-		tree = ET.parse(gridset_file)
-		root = tree.getroot()
-
-		# Iterate through all cells in the gridset
-		for cell in root.findall('.//Cell'):
-			# Find 'Jump.To' commands within each cell
-			jump_to_command = cell.find(".//Commands/Command[@ID='Jump.To']/Parameter[@Key='grid']")
-			if jump_to_command is not None:
-				target_grid = jump_to_command.text
-				grid_element = cell.find('..')	# Find the parent Grid element of the Cell				
-				grid_name = get_grid_name_from_path(gridset_file)
-				
-				#print(f"Adding navigation: {grid_name} -> {target_grid}")	# Debugging
-				if grid_name not in navigation_data:
-					navigation_data[grid_name] = []
-				navigation_data[grid_name].append(target_grid)
-
-	except ET.ParseError as e:
-		print(f"Error parsing the gridset file: {e}")
-	#print(navigation_data)
-	return navigation_data
 
 def find_path(home_grid, target_grid, navigation_map):
 	"""
@@ -133,6 +92,21 @@ def find_path(home_grid, target_grid, navigation_map):
 	# print(f"No path found from {home_grid} to {target_grid}.")
 	return []  # Return an empty list if no path is found
 
+def extract_gridset_contents(file_path, extract_to):
+	with zipfile.ZipFile(file_path, 'r') as zip_ref:
+		zip_ref.extractall(extract_to)
+
+def analyze_texts(text_list):
+	# NB: Not really using any more but maybe useful in the future. 
+	word_count = Counter()
+	phrase_count = 0
+	for text in text_list:
+		words = text.split()
+		if len(words) > 1:
+			phrase_count += 1
+		word_count.update(words)
+	return word_count, phrase_count
+	
 
 def calculate_button_coordinates(button_position, grid_rows, grid_cols, screen_dimensions):
 	"""
@@ -475,6 +449,31 @@ def save_to_csv(data, filename):
 		for row in data:
 			writer.writerow(row)
 
+def deduplicate_dicts(grid_data):
+	deduplicated_dict = {}
+	count_dict = defaultdict(int)
+
+	for item in grid_data:
+		word_phrase = item.get('Word/Phrase')
+		if word_phrase not in deduplicated_dict:
+			deduplicated_dict[word_phrase ] = item
+		count_dict[word_phrase] += 1
+
+	deduplicated_list = list(deduplicated_dict.values())
+
+	# Add count as another key in each dictionary
+	for item in deduplicated_list:
+		word_phrase	 = item.get('Word/Phrase')
+		item['count'] = count_dict[word_phrase]
+
+	return deduplicated_list
+
+
+def find_unique_words(grid_data1, grid_data2):
+	wordlist2 = set(item['Word/Phrase'] for item in grid_data2)
+	unique_dicts_in_list1 = [item for item in grid_data1 if item['Word/Phrase'] not in wordlist2]
+
+	return unique_dicts_in_list1
 
 def main():
 	parser = argparse.ArgumentParser(description='Compare the language content of two .gridset files.')
@@ -489,37 +488,42 @@ def main():
 	extract_gridset_contents(args.gridset2, "extracted2")
 
 	# Extract home grid names from settings files of each gridset
-		# Use specified home grid names if provided, otherwise extract from settings
 	home_grid1 = args.gridset1home or get_home_grid_from_settings("extracted1/Settings0/settings.xml")
 	home_grid2 = args.gridset2home or get_home_grid_from_settings("extracted2/Settings0/settings.xml")
 	
 	screen_dimensions = (1920, 1080)  # Define screen dimensions
 	
-	# Find the main XML file in the extracted directories
-	main_xml_file_1 = find_main_grid_xml("extracted1", home_grid1)
-	main_xml_file_2 = find_main_grid_xml("extracted2", home_grid2)
-		
-	# Build navigation maps for each gridset
-	navigation_map1 = parse_gridset_for_navigation(main_xml_file_1)
-	navigation_map2 = parse_gridset_for_navigation(main_xml_file_2)
+	# Build navigation maps and find relevant XML files for each gridset
+	navigation_map1, relevant_xml_files_1 = build_navigation_map_and_find_relevant_files(os.path.join("extracted1", "Grids", home_grid1, "grid.xml"))
+	navigation_map2, relevant_xml_files_2 = build_navigation_map_and_find_relevant_files(os.path.join("extracted2",	 "Grids", home_grid2, "grid.xml"))
 	
-	# Extract and process grid XML files
-	grid_xml_files_1 = find_xml_files("extracted1")
-	grid_xml_files_2 = find_xml_files("extracted2")
-
-	gridset1_data = process_gridset_for_csv(grid_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
+	# Process and save CSV data for each gridset
+	gridset1_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
 	save_to_csv(gridset1_data, 'gridset1_data.csv')
 
-	gridset2_data = process_gridset_for_csv(grid_xml_files_2, navigation_map2, screen_dimensions, home_grid2)
+	gridset2_data = process_gridset_for_csv(relevant_xml_files_2, navigation_map2, screen_dimensions, home_grid2)
 	save_to_csv(gridset2_data, 'gridset2_data.csv')
 
+	deduplicated_words1 = deduplicate_dicts(gridset1_data)
+	save_to_csv(deduplicated_words1, 'gridset1_dedup_data.csv')
+
+	deduplicated_words2 = deduplicate_dicts(gridset2_data)
+	save_to_csv(deduplicated_words2, 'gridset2_dedup_data.csv')
+
+	gridset1_unique = find_unique_words(deduplicated_words1, deduplicated_words2)
+	save_to_csv(gridset1_unique, 'gridset1unique_data.csv')
+
+	gridset2_unique = find_unique_words(deduplicated_words2, deduplicated_words1)
+	save_to_csv(gridset2_unique, 'gridset2unique_data.csv')
+
+
+
 	# Compare gridsets
-	results = compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2)
+	results = compare_gridsets(relevant_xml_files_1, relevant_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2)
 
 	# Print results
 	for key, value in results.items():
 		print(f"{key}: {value}")
-
 
 if __name__ == "__main__":
 	main()
