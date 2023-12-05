@@ -9,3 +9,29 @@
 	python GridAnalysis.py "SuperCore30 switch scanning.gridset"  
 ``
 
+example output
+
+```
+
+Total Words in Gridset 1: 9629
+Total Words in Gridset 2: 11701
+Unique Words in Gridset 1: 2979
+Unique Words in Gridset 2: 2977
+Shared Words: 2882
+Exclusive Words in Gridset 1: 97
+Exclusive Words in Gridset 2: 95
+Phrases in Gridset 1: 487
+Phrases in Gridset 2: 550
+Total Pages in Gridset 1: 529
+Total Pages in Gridset 2: 456
+Total Buttons in Gridset 1: 8234
+Total Buttons in Gridset 2: 10088
+Average Hits in Gridset 1: 4.723463687150838
+Average Hits in Gridset 2: 4.585943695479778
+Top 20 Easiest Words/Phrases in Gridset 1: ['it', 'you', 'not', 'more', 'I', 'in', 'good', 'see', 'now', 'want', 'help', 'be', 'er', 'est', 's', 'y', 'ly', "'s", 'happy', 'cold']
+Top 20 Easiest Words/Phrases in Gridset 2: ['not', 'now', 'this', 'in', 'on', 'I', 'my', 'it', 'more', 'good', 'and', 'with', 'help', 'put', 'then', 'a', 'the', 'you', 'come', 'see']
+
+```
+
+
+Note it also spits out a range of csv files for the Gridsets of words and effort
