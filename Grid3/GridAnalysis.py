@@ -400,12 +400,12 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 
 	return comparison_results
 
-def analyze_single_gridset(grid_xml_files, navigation_map, screen_dimensions, home_grid):
+def analyze_single_gridset(grid_xml_files, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time):
 	word_counts, phrase_counts, cell_data, total_hits, num_cells = Counter(), 0, [], 0, 0
 
 	# Process each file in the gridset
 	for file in grid_xml_files:
-		word_count, phrase_count, cells, hits, cells_count = process_single_grid_file(file, navigation_map, screen_dimensions, home_grid)
+		word_count, phrase_count, cells, hits, cells_count = process_single_grid_file(file, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time)
 		word_counts.update(word_count)
 		phrase_counts += phrase_count
 		cell_data.extend(cells)
@@ -550,7 +550,7 @@ def main():
 		save_to_csv(gridset_data, 'gridset_data.csv')
 
 		# Analyze single gridset
-		results = analyze_single_gridset(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
+		results = analyze_single_gridset(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1,scan_time_per_unit, selection_time)
 		
 	# Print results
 	for key, value in results.items():
