@@ -148,10 +148,13 @@ def calculate_grid_effort(grid_rows, grid_cols, total_visible_buttons, button_po
 	BUTTON_SIZE_WEIGHT = 0.003
 	FIELD_SIZE_WEIGHT = 0.007
 	PRIOR_SCAN_WEIGHT = 0.001
+	NAVIGATION_STEP_WEIGHT = 1.0 
 
 	button_size = BUTTON_SIZE_WEIGHT * grid_rows * grid_cols
 	field_size = FIELD_SIZE_WEIGHT * total_visible_buttons
-	prior_scan = PRIOR_SCAN_WEIGHT * ((button_position[0] - 1) * grid_cols + button_position[1])
+	# Calculate the linear scan position (assuming left-to-right, top-to-bottom scanning)
+	linear_position = (button_position[0] - 1) * grid_cols + button_position[1]
+	prior_scan = PRIOR_SCAN_WEIGHT * linear_position
 
 	button_coordinates = calculate_button_coordinates(button_position, grid_rows, grid_cols, screen_dimensions)
 	screen_width, screen_height = screen_dimensions
@@ -159,57 +162,17 @@ def calculate_grid_effort(grid_rows, grid_cols, total_visible_buttons, button_po
 	start_x, start_y = screen_width, screen_height	# Default starting position
 	distance = math.sqrt(((start_x - end_x) / screen_width) ** 2 + ((start_y - end_y) / screen_height) ** 2) / math.sqrt(2)
 
-	# Calculate the number of steps to the button's grid
+	# Calculate the number of steps to the button's grid and the associated effort
 	path_to_button = find_path(home_grid, button_grid, navigation_map)
+	navigation_steps = len(path_to_button) - 1 if path_to_button else 0
+	navigation_effort = NAVIGATION_STEP_WEIGHT * navigation_steps
+
 	prior_effort = len(path_to_button) - 1 if path_to_button else 0
 	hits = len(path_to_button) if path_to_button else 1	 # Number of hits
 	
 	#print(f"Path from {home_grid} to {button_grid}: {path_to_button}, Hits: {hits}")
-	# Ignore scan
-	#total_effort = button_size + field_size + prior_scan + distance + prior_effort
-	total_effort = button_size + field_size + distance + prior_effort
+	total_effort = button_size + field_size + prior_scan + distance + prior_effort
 	return round(total_effort,2), hits
-
-
-def extract_cell_data(cell_element, grid_element, grid_name):
-	cell_data = {}
-
-	# Extract grid rows and columns
-	grid_rows = len(grid_element.findall(".//RowDefinitions/RowDefinition"))
-	grid_cols = len(grid_element.findall(".//ColumnDefinitions/ColumnDefinition"))
-	cell_data['grid_rows'] = grid_rows
-	cell_data['grid_cols'] = grid_cols
-	cell_data['grid_name'] = grid_name
-
-	# Initialize text as empty
-	cell_data['text'] = ''
-
-	# Count total visible cells in the grid
-	total_visible_cells = len(grid_element.findall(".//Cell"))
-	cell_data['total_visible_buttons'] = total_visible_cells
-
-	# Check if the cell has a Jump.To command only (exclude such cells)
-	jump_command = cell_element.find(".//Command[@ID='Jump.To']")
-	insert_text_command = cell_element.find(".//Command[@ID='Action.InsertText']")
-
-
-	if insert_text_command is not None:
-		# Extract text from the InsertText command
-		text_element = insert_text_command.find(".//Parameter[@Key='text']/p/s/r")
-		if text_element is not None and text_element.text:
-			cell_data['text'] = text_element.text.strip()
-
-	# If the cell has only a Jump.To command and no InsertText, exclude it
-	if jump_command is not None and insert_text_command is None:
-		return None
-
-	# Extract other cell properties
-	cell_x = int(cell_element.get('X', '1'))  # Default to 1 if not specified
-	cell_y = int(cell_element.get('Y', '1'))  # Default to 1 if not specified
-	cell_data['button_position'] = (cell_x, cell_y)
-
-	return cell_data
-
 
 
 def get_home_grid_from_settings(settings_file):
@@ -265,9 +228,10 @@ def extract_combined_cell_and_wordlist_contents(xml_root, grid_name, screen_dime
 			continue
 
 		# Handle regular cells
-		text_element = cell.find(".//Content/Commands/Command[@ID='Action.InsertText']/Parameter[@Key='text']/p/s/r")
-		if text_element is not None and text_element.text:
-			cell_data['Text'] = text_element.text.strip()
+		text_elements = cell.findall(".//Content/Commands/Command[@ID='Action.InsertText']/Parameter[@Key='text']//r")
+		full_text = ' '.join([elem.text.strip() for elem in text_elements if elem.text and elem.text.strip()])
+		if full_text:
+			cell_data['Text'] = full_text
 			cell_data['Position'] = cell_position
 			cell_data['XY'] = (cell_x, cell_y)
 			cell_data['PageName'] = grid_name
