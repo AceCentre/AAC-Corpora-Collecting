@@ -3,10 +3,16 @@ import argparse
 from difflib import get_close_matches
 
 def read_csv(file_path):
-	# Read the CSV file and return a dictionary mapping words/phrases to their metrics
-	with open(file_path, mode='r', newline='', encoding='utf-8') as file:
-		reader = csv.DictReader(file)
-		return {row['Word/Phrase'].strip().lower(): row for row in reader}
+    with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        data_dict = {}
+        for row in reader:
+            key_word = row['Word/Phrase'].strip().lower()
+            key_grid = row['Grid Name'].strip().lower()
+            data_dict[key_word] = row
+            data_dict[key_grid] = row  # This allows for lookup by Grid Name
+        return data_dict
+
 
 def find_alternative_paths(word, word_data):
 	alternatives = []
@@ -108,37 +114,33 @@ def calculate_total_effort(sentence, word_data, input_technique, spelling_page=N
 def spell_word_effort(word, word_data, input_technique, spelling_page):
     total_spelling_effort = 0
     spelling_paths = []
-    # Normalize spelling page name
     normalized_spelling_page = spelling_page.lower().strip()
 
-    # If the spelling page exists in word_data
     if normalized_spelling_page in word_data:
         page_path = word_data[normalized_spelling_page]['Path']
         page_effort = float(word_data[normalized_spelling_page]['Effort Score'])
-        
+
         for letter in word.lower():
-            # Assuming each letter's effort score is under the spelling page
             letter_key = f"{normalized_spelling_page}_{letter}"
             if letter_key in word_data:
                 letter_effort = float(word_data[letter_key]['Effort Score'])
             else:
-                letter_effort = page_effort  # If the letter is not found, use the page's base effort
+                letter_effort = page_effort  # Use page effort if letter not found
 
-            # Add the page path only for the first letter
             if not spelling_paths:
                 spelling_paths.append((letter, page_path, letter_effort))
             else:
                 spelling_paths.append((letter, "Same as previous", letter_effort))
             
             total_spelling_effort += letter_effort
-
     else:
         print(f"Spelling page '{spelling_page}' not found in word data.")
-        # Handle case where spelling page is not found
+        # Handle the case where the spelling page is not found
         # ...
 
     return total_spelling_effort, spelling_paths
 
+    
 
 
 
