@@ -6,6 +6,10 @@
 
 ``python
 	python GridAnalysis.py "SuperCore30 switch scanning.gridset"  "Super Core 50.gridset" --gridset1home '01 CORE pg1 TEEN' --gridset2home '01 CORE - Home - TEEN ADULT'
+	
+	or
+	
+	
 	python GridAnalysis.py "SuperCore30 switch scanning.gridset"  
 ``
 
@@ -35,3 +39,7 @@ Top 20 Easiest Words/Phrases in Gridset 2: ['not', 'now', 'this', 'in', 'on', 'I
 
 
 Note it also spits out a range of csv files for the Gridsets of words and effort
+
+- addFrequencyData.py SomeFile.csv
+
+	parses a csv file where the first column is a word/phrase. It then finds the frequency count for that word in a corpus. Adds a new column for frquency data. Note this currently set for a news 2013 corpus. Your mileage may vary
