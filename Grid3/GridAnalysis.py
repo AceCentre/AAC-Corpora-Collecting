@@ -7,6 +7,8 @@ from collections import Counter
 from collections import deque
 from collections import defaultdict
 import csv
+from itertools import zip_longest
+
 
 
 def parse_xml(file_path):
@@ -372,7 +374,9 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 
 	# Additional metrics
 	total_pages_1 = len(set(file for file in grid_xml_files_1))
+	total_pages_linked_1 = len(navigation_map1.keys())
 	total_pages_2 = len(set(file for file in grid_xml_files_2))
+	total_pages_linked_2 = len(navigation_map2.keys())
 	total_buttons_1 = len(cell_data_1)
 	total_buttons_2 = len(cell_data_2)
 	top_20_easiest_1 = sorted(cell_data_1, key=lambda x: x['effort_score'])[:20]
@@ -389,7 +393,9 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 		"Phrases in Gridset 1": phrase_counts_1,
 		"Phrases in Gridset 2": phrase_counts_2,
 		"Total Pages in Gridset 1": total_pages_1,
+		"Total LINKED Pages in Gridset 1" : total_pages_linked_1,
 		"Total Pages in Gridset 2": total_pages_2,
+		"Total LINKED Pages in Gridset 2": total_pages_linked_2,
 		"Total Buttons in Gridset 1": total_buttons_1,
 		"Total Buttons in Gridset 2": total_buttons_2,
 		"Average Hits in Gridset 1": round((total_hits_1 / num_cells_1 if num_cells_1 > 0 else 0),2),
@@ -456,16 +462,31 @@ def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, h
 
 def save_to_csv(data, filename):
 	"""
-	Save data to a CSV file.
+	Save data to a CSV file.  If a DICT then save as rows-columns, if a LIST then save as a column
 
 	:param data: List of dictionaries with cell data.
 	:param filename: Name of the CSV file to save.
 	"""
 	with open(filename, mode='w', newline='', encoding='utf-8') as file:
-		writer = csv.DictWriter(file, fieldnames=data[0].keys())
-		writer.writeheader()
-		for row in data:
-			writer.writerow(row)
+		if isinstance(data, list):  # Check if data is a list
+			if all(isinstance(item, dict) for item in data):  # Check if all elements in the list are dictionaries
+				writer = csv.DictWriter(file, fieldnames=data[0].keys())
+				writer.writeheader()
+				for row in data:
+					writer.writerow(row)
+				print(f"List of dictionaries has been saved to '{filename}'")
+			else:
+				transposed_data = zip_longest(*[data], fillvalue='')  # Transpose the list
+				csv_writer = csv.writer(file)
+				csv_writer.writerows(transposed_data)
+				print(f"List has been saved to '{filename}'")
+		elif isinstance(data, dict):  # Check if data is a dictionary
+			writer = csv.DictWriter(file, fieldnames=data.keys())
+			writer.writeheader()
+			writer.writerow(data)
+			print(f"Dictionary has been saved to '{filename}'")
+		else:
+			print("Unsupported data type. Please provide a list or a dictionary.")
 
 def deduplicate_dicts(grid_data):
 	deduplicated_dict = {}
@@ -509,40 +530,55 @@ def main():
 	
 	extract_gridset_contents(args.gridset1, os.path.join(args.output,"ExtractedGrids/extracted1"))
 
+	# Extract home grid names from settings files of each gridset. Build navigation maps and find relevant XML files for each gridset
 	home_grid1 = args.gridset1home or get_home_grid_from_settings(os.path.join(args.output,"ExtractedGrids/extracted1/Settings0/settings.xml"))
 	navigation_map1, relevant_xml_files_1 = build_navigation_map_and_find_relevant_files(os.path.join(args.output,"ExtractedGrids/extracted1/Grids", home_grid1, "grid.xml"))
-
+	grid1_name = os.path.splitext(os.path.basename(args.gridset1))[0]
 	
 	if args.gridset2:	
 		extract_gridset_contents(args.gridset2, os.path.join(args.output,"ExtractedGrids/extracted2"))
 
-		# Extract home grid names from settings files of each gridset
-	
+		# Extract home grid names from settings files of each gridset. Build navigation maps and find relevant XML files for each gridset
 		home_grid2 = args.gridset2home or get_home_grid_from_settings(os.path.join(args.output,"ExtractedGrids/extracted2/Settings0/settings.xml"))
-		
-		# Build navigation maps and find relevant XML files for each gridset
 		navigation_map2, relevant_xml_files_2 = build_navigation_map_and_find_relevant_files(os.path.join(args.output,"ExtractedGrids/extracted2/Grids", home_grid2, "grid.xml"))
-	
+		grid2_name = os.path.splitext(os.path.basename(args.gridset2))[0]
+
 		# Process and save CSV data for each gridset
+		#Overall Grid data first
 		gridset1_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1,scan_time_per_unit, selection_time)
-		save_to_csv(gridset1_data, os.path.join(args.output, "gridset1_data.csv"))
+		save_to_csv(gridset1_data, os.path.join(args.output, grid1_name +'_data.csv'))
 
 		gridset2_data = process_gridset_for_csv(relevant_xml_files_2, navigation_map2, screen_dimensions, home_grid2,scan_time_per_unit, selection_time)
-		save_to_csv(gridset2_data, os.path.join(args.output,'gridset2_data.csv'))
+		save_to_csv(gridset2_data, os.path.join(args.output, grid2_name +'_data.csv'))
 
+		#Then work our the deduplicated words and pages for Gridset1
 		deduplicated_words1 = deduplicate_dicts(gridset1_data)
-		save_to_csv(deduplicated_words1, os.path.join(args.output,'gridset1_dedup_data.csv'))
+		save_to_csv(deduplicated_words1, os.path.join(args.output, grid1_name +'_dedup_words.csv'))
 
+		linked_grid_pages1 = list(navigation_map1.keys())  ## TO DO - DO THIS BETTER - GET THE PATH TOO.
+		save_to_csv(linked_grid_pages1, os.path.join(args.output, grid1_name +'_linked_pages.csv'))
+
+		#Then work out the deduplicated words and pages for Gridset 2
 		deduplicated_words2 = deduplicate_dicts(gridset2_data)
-		save_to_csv(deduplicated_words2, os.path.join(args.output,'gridset2_dedup_data.csv'))
+		save_to_csv(deduplicated_words2, os.path.join(args.output, grid2_name +'_dedup_words.csv'))
+
+		linked_grid_pages2 = list(navigation_map2.keys())
+		save_to_csv(linked_grid_pages2, os.path.join(args.output, grid2_name +'_linked_pages.csv'))
+
+		#Then do comparisons between the two gridsets in terms of pages and then unique words
+		unique_pages1 = list(set(navigation_map1)-set(navigation_map2))
+		save_to_csv(unique_pages1, os.path.join(args.output, grid1_name +'_unique_pages.csv'))
+		
+		unique_pages2 = list(set(navigation_map2)-set(navigation_map1))
+		save_to_csv(unique_pages2, os.path.join(args.output, grid2_name +'_unique_pages.csv'))
 
 		gridset1_unique = find_unique_words(deduplicated_words1, deduplicated_words2)
-		save_to_csv(gridset1_unique, os.path.join(args.output,'gridset1unique_data.csv'))
+		save_to_csv(gridset1_unique, os.path.join(args.output,  grid1_name + 'unique_words.csv'))
 
 		gridset2_unique = find_unique_words(deduplicated_words2, deduplicated_words1)
-		save_to_csv(gridset2_unique, os.path.join(args.output,'gridset2unique_data.csv'))
+		save_to_csv(gridset2_unique, os.path.join(args.output, grid2_name +'_unique_words.csv'))
 
-		# Compare gridsets
+		# Compare gridsets to print stats
 		results = compare_gridsets(relevant_xml_files_1, relevant_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2, scan_time_per_unit, selection_time)
 
 
