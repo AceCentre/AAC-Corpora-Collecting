@@ -366,8 +366,8 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 		"Total Pages in Gridset 2": total_pages_2,
 		"Total Buttons in Gridset 1": total_buttons_1,
 		"Total Buttons in Gridset 2": total_buttons_2,
-		"Average Hits in Gridset 1": total_hits_1 / num_cells_1 if num_cells_1 > 0 else 0,
-		"Average Hits in Gridset 2": total_hits_2 / num_cells_2 if num_cells_2 > 0 else 0,
+		"Average Hits in Gridset 1": round((total_hits_1 / num_cells_1 if num_cells_1 > 0 else 0),2),
+		"Average Hits in Gridset 2": round((total_hits_2 / num_cells_2 if num_cells_2 > 0 else 0),2),
 		"Top 20 Easiest Words/Phrases in Gridset 1": [x['text'] for x in top_20_easiest_1],
 		"Top 20 Easiest Words/Phrases in Gridset 2": [x['text'] for x in top_20_easiest_2],
 	}
@@ -397,7 +397,7 @@ def analyze_single_gridset(grid_xml_files, navigation_map, screen_dimensions, ho
 		"Phrases": phrase_counts,
 		"Total Pages": total_pages,
 		"Total Buttons": total_buttons,
-		"Average Hits": total_hits / num_cells if num_cells > 0 else 0,
+		"Average Hits": round((total_hits / num_cells if num_cells > 0 else 0),2),
 		"Top 20 Easiest Words/Phrases": [x['text'] for x in top_20_easiest]
 	}
 
