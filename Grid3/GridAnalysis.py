@@ -507,21 +507,21 @@ def main():
 	scan_time_per_unit = 1	# Example value, adjust as needed
 	selection_time = 0.5  # Example value, adjust as needed
 	
-	extract_gridset_contents(args.gridset1, "extracted1")
+	extract_gridset_contents(args.gridset1, os.path.join(args.output,"ExtractedGrids/extracted1"))
 
-	home_grid1 = args.gridset1home or get_home_grid_from_settings("extracted1/Settings0/settings.xml")
-	navigation_map1, relevant_xml_files_1 = build_navigation_map_and_find_relevant_files(os.path.join("extracted1", "Grids", home_grid1, "grid.xml"))
+	home_grid1 = args.gridset1home or get_home_grid_from_settings(os.path.join(args.output,"ExtractedGrids/extracted1/Settings0/settings.xml"))
+	navigation_map1, relevant_xml_files_1 = build_navigation_map_and_find_relevant_files(os.path.join(args.output,"ExtractedGrids/extracted1/Grids", home_grid1, "grid.xml"))
 
 	
 	if args.gridset2:	
-		extract_gridset_contents(args.gridset2, "extracted2")
+		extract_gridset_contents(args.gridset2, os.path.join(args.output,"ExtractedGrids/extracted2"))
 
 		# Extract home grid names from settings files of each gridset
 	
-		home_grid2 = args.gridset2home or get_home_grid_from_settings("extracted2/Settings0/settings.xml")
+		home_grid2 = args.gridset2home or get_home_grid_from_settings(os.path.join(args.output,"ExtractedGrids/extracted2/Settings0/settings.xml"))
 		
 		# Build navigation maps and find relevant XML files for each gridset
-		navigation_map2, relevant_xml_files_2 = build_navigation_map_and_find_relevant_files(os.path.join("extracted2",	 "Grids", home_grid2, "grid.xml"))
+		navigation_map2, relevant_xml_files_2 = build_navigation_map_and_find_relevant_files(os.path.join(args.output,"ExtractedGrids/extracted2/Grids", home_grid2, "grid.xml"))
 	
 		# Process and save CSV data for each gridset
 		gridset1_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1,scan_time_per_unit, selection_time)
