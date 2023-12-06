@@ -40,6 +40,58 @@ Top 20 Easiest Words/Phrases in Gridset 2: ['not', 'now', 'this', 'in', 'on', 'I
 
 Note it also spits out a range of csv files for the Gridsets of words and effort
 
+
+- Grid-FindPathForSentence.py. Give it csv from our analysis - then a sentence to test. See what the effort scores for scanning or direct selection and alternatives. 
+	
+	```python
+	
+	python Grid-FindPathForSentence.py gridset_data.csv "How are you ?" --input_technique scanning
+Sentence Analysis:
+
+Word: 'how'
+  - Main Path: 01 CORE pg1 TEEN -> 03 QUESTIONS
+  - Effort: 2.5
+  - Alternative Paths:
+    - 01 CORE pg1 TEEN -> 04a ACTIONS main -> 04d ACTIONS doing to things verbs pg1
+    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 23 APPS menu TEEN -> 23 APPS Alexa Home -> 23 APPS Alexa Music home -> 23 APPS Alexa Music Album
+    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 15aa TOPICS index pg1 -> 15c TOPICS Jokes
+    ... and 26 more alternatives.
+
+Word: 'are'
+  - Main Path: 01 CORE pg1 TEEN -> 03 QUESTIONS
+  - Effort: 5.5
+  - Alternative Paths:
+    - 01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS social care TEEN
+    - 01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS social care TEEN
+    - 01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS social care TEEN
+    ... and 27 more alternatives.
+
+Word: 'you'
+  - Main Path: 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 10 NEWS core
+  - Effort: 2.5
+  - Alternative Paths:
+    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 10 NEWS core
+    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 09 CHAT core
+    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08i PLAY cars core -> 08i PLAY cars expanded
+    ... and 84 more alternatives.
+
+Word not found: ?
+Word: '?'
+  - Main Path: Spelling Path (if applicable)
+  - Effort: 0
+  - Alternative Paths:
+    - 01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE eating out core TEEN -> 07x DAILY LIFE eating out expanded TEEN
+    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08i PLAY cars core -> 08i PLAY cars expanded
+    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08i PLAY cars core -> 08i PLAY cars expanded
+    ... and 118 more alternatives.
+
+Total Effort for 'scanning' selection: 10.5
+
+Total Effort for 'scanning' selection: 10.5
+Paths: ['01 CORE pg1 TEEN -> 03 QUESTIONS', '01 CORE pg1 TEEN -> 03 QUESTIONS', '01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 10 NEWS core', 'Spelling Path (if applicable)']
+	
+	```
+
 - addFrequencyData.py SomeFile.csv
 
 	parses a csv file where the first column is a word/phrase. It then finds the frequency count for that word in a corpus. Adds a new column for frquency data. Note this currently set for a news 2013 corpus. Your mileage may vary
