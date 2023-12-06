@@ -4,14 +4,15 @@
 - Grid3-XML-Format.md - documentation on the grid3 format
 - GridAnalysis.py. Diff two different gridsets or Analyse a single Gridset. Use it like: NB: Calculations on effort are WIP. It will find the home grid - but you can override it like:
 
-``python
+```python
+
 	python GridAnalysis.py "SuperCore30 switch scanning.gridset"  "Super Core 50.gridset" --gridset1home '01 CORE pg1 TEEN' --gridset2home '01 CORE - Home - TEEN ADULT'
 	
 	or
 	
 	
 	python GridAnalysis.py "SuperCore30 switch scanning.gridset"  
-``
+```
 
 example output
 
@@ -43,7 +44,7 @@ Note it also spits out a range of csv files for the Gridsets of words and effort
 
 - Grid-FindPathForSentence.py. Give it csv from our analysis - then a sentence to test. See what the effort scores for scanning or direct selection and alternatives. 
 	
-	```python
+```python
 	
 	python Grid-FindPathForSentence.py gridset_data.csv "How are you ?" --input_technique scanning
 Sentence Analysis:
@@ -90,7 +91,7 @@ Total Effort for 'scanning' selection: 10.5
 Total Effort for 'scanning' selection: 10.5
 Paths: ['01 CORE pg1 TEEN -> 03 QUESTIONS', '01 CORE pg1 TEEN -> 03 QUESTIONS', '01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 10 NEWS core', 'Spelling Path (if applicable)']
 	
-	```
+```
 
 - addFrequencyData.py SomeFile.csv
 
