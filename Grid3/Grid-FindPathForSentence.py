@@ -1,5 +1,6 @@
 import csv
 import argparse
+from difflib import get_close_matches
 
 def read_csv(file_path):
     # Read the CSV file and return a dictionary mapping words/phrases to their metrics
@@ -40,13 +41,24 @@ def find_path_and_effort(word, word_data, input_technique):
 
 
 def calculate_total_effort(sentence, word_data, input_technique):
-    # Check if the entire sentence is a phrase in the CSV
-    if sentence.lower() in word_data:
-        path, effort = find_path_and_effort(sentence, word_data, input_technique)
-        print(f"Phrase: '{sentence}'\n- Path: {path}\n- Effort: {effort}\n")
+    normalized_sentence = sentence.lower().strip()
+
+    # Check for an exact match of the entire sentence
+    if normalized_sentence in word_data:
+        path, effort = find_path_and_effort(normalized_sentence, word_data, input_technique)
+        print(f"Exact phrase match: '{sentence}'\n- Path: {path}\n- Effort: {effort}\n")
         return effort, [path]
 
-    words = sentence.lower().split()
+    # Attempt fuzzy matching for the entire sentence
+    close_matches = get_close_matches(normalized_sentence, word_data.keys(), n=1, cutoff=0.8)
+    if close_matches:
+        matched_phrase = close_matches[0]
+        path, effort = find_path_and_effort(matched_phrase, word_data, input_technique)
+        print(f"Fuzzy match for phrase: '{sentence}' matched with '{matched_phrase}'\n- Path: {path}\n- Effort: {effort}\n")
+        return effort, [path]
+
+    # Process each word individually if no phrase match is found
+    words = normalized_sentence.split()
     total_effort = 0
     paths = []
     print("Sentence Analysis:\n")
@@ -74,6 +86,7 @@ def calculate_total_effort(sentence, word_data, input_technique):
         paths.append(path)
     print(f"Total Effort for '{input_technique}' selection: {total_effort}\n")
     return total_effort, paths
+
 
 
 def spell_word(word, word_data, input_technique):
