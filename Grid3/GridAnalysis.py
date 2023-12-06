@@ -499,6 +499,7 @@ def main():
 	parser.add_argument('gridset2', nargs='?', type=str, help='Path to the second .gridset file')
 	parser.add_argument('--gridset1home', type=str, help='Override home grid name for the first gridset', default=None)
 	parser.add_argument('--gridset2home', type=str, help='Override home grid name for the second gridset', default=None)
+	parser.add_argument('--output', type=str, help='output directory for csv files', default=None)
 
 	args = parser.parse_args()
 	screen_dimensions = (1920, 1080)  # Define screen dimensions
@@ -506,8 +507,9 @@ def main():
 	scan_time_per_unit = 1	# Example value, adjust as needed
 	selection_time = 0.5  # Example value, adjust as needed
 	
-	home_grid1 = args.gridset1home or get_home_grid_from_settings("extracted1/Settings0/settings.xml")
 	extract_gridset_contents(args.gridset1, "extracted1")
+
+	home_grid1 = args.gridset1home or get_home_grid_from_settings("extracted1/Settings0/settings.xml")
 	navigation_map1, relevant_xml_files_1 = build_navigation_map_and_find_relevant_files(os.path.join("extracted1", "Grids", home_grid1, "grid.xml"))
 
 	
@@ -523,22 +525,22 @@ def main():
 	
 		# Process and save CSV data for each gridset
 		gridset1_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1,scan_time_per_unit, selection_time)
-		save_to_csv(gridset1_data, 'gridset1_data.csv')
+		save_to_csv(gridset1_data, os.path.join(args.output, "gridset1_data.csv"))
 
 		gridset2_data = process_gridset_for_csv(relevant_xml_files_2, navigation_map2, screen_dimensions, home_grid2,scan_time_per_unit, selection_time)
-		save_to_csv(gridset2_data, 'gridset2_data.csv')
+		save_to_csv(gridset2_data, os.path.join(args.output,'gridset2_data.csv'))
 
 		deduplicated_words1 = deduplicate_dicts(gridset1_data)
-		save_to_csv(deduplicated_words1, 'gridset1_dedup_data.csv')
+		save_to_csv(deduplicated_words1, os.path.join(args.output,'gridset1_dedup_data.csv'))
 
 		deduplicated_words2 = deduplicate_dicts(gridset2_data)
-		save_to_csv(deduplicated_words2, 'gridset2_dedup_data.csv')
+		save_to_csv(deduplicated_words2, os.path.join(args.output,'gridset2_dedup_data.csv'))
 
 		gridset1_unique = find_unique_words(deduplicated_words1, deduplicated_words2)
-		save_to_csv(gridset1_unique, 'gridset1unique_data.csv')
+		save_to_csv(gridset1_unique, os.path.join(args.output,'gridset1unique_data.csv'))
 
 		gridset2_unique = find_unique_words(deduplicated_words2, deduplicated_words1)
-		save_to_csv(gridset2_unique, 'gridset2unique_data.csv')
+		save_to_csv(gridset2_unique, os.path.join(args.output,'gridset2unique_data.csv'))
 
 		# Compare gridsets
 		results = compare_gridsets(relevant_xml_files_1, relevant_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2, scan_time_per_unit, selection_time)
