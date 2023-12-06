@@ -174,6 +174,16 @@ def calculate_grid_effort(grid_rows, grid_cols, total_visible_buttons, button_po
 	total_effort = button_size + field_size + prior_scan + distance + prior_effort
 	return round(total_effort,2), hits
 
+def calculate_scanning_effort(button_position, scan_time_per_unit, selection_time):
+	row_effort = (button_position[0] - 1) * scan_time_per_unit
+	col_effort = (button_position[1] - 1) * scan_time_per_unit
+	total_effort = row_effort + col_effort + selection_time
+
+	# Debugging print statements
+	#print(f"Button position: {button_position}, Row effort: {row_effort}, Col effort: {col_effort}, Total effort: {total_effort}")
+
+	return total_effort
+
 
 def get_home_grid_from_settings(settings_file):
 	"""
@@ -261,7 +271,7 @@ def extract_combined_cell_and_wordlist_contents(xml_root, grid_name, screen_dime
 	return combined_contents
 
 
-def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid):
+def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time):
 	root = parse_xml(file)
 	grid_name = get_grid_name_from_path(file)
 
@@ -276,26 +286,42 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid)
 	for data in combined_contents:
 		word_count.update(data['Text'].split())
 		phrase_count += 1 if len(data['Text'].split()) > 1 else 0
-		grid_position = data.get('GridPosition', (1, 1))  # Default to (1, 1) if not specified
+		grid_position = data.get('XY', (1, 1))  # Default to (1, 1) if not specified
 		path_to_button = find_path(home_grid, grid_name, navigation_map)
 		path_str = ' -> '.join(path_to_button)
+		rows = len(root.findall(".//RowDefinitions/RowDefinition"))
+		cols = len(root.findall(".//ColumnDefinitions/ColumnDefinition"))
+		cells = len(root.findall(".//Cell"))
 		
-		effort_score, hits = calculate_grid_effort(
-			len(root.findall(".//RowDefinitions/RowDefinition")),
-			len(root.findall(".//ColumnDefinitions/ColumnDefinition")),
-			len(root.findall(".//Cell")),
-			grid_position,
-			screen_dimensions,
-			home_grid,
-			grid_name,
-			navigation_map
-		)
-		total_hits += hits
-		num_cells += 1
+		if data['XY'] != 'N/A':
+			grid_position = data['XY']		
+			effort_score, hits = calculate_grid_effort(
+				rows,
+				cols,
+				cells,
+				grid_position,
+				screen_dimensions,
+				home_grid,
+				grid_name,
+				navigation_map
+			)
+			total_hits += hits
 
+			scanning_effort_score = calculate_scanning_effort(
+				grid_position,
+				scan_time_per_unit,
+				selection_time
+			)
+		else:
+			# Handle the 'N/A' case - either skip or set a default effort score
+			scanning_effort_score = 0  # Example default value, adjust as needed
+			effort_score = 0
+		num_cells += 1
+		
 		cell_data_list.append({
 			'text': data['Text'],
 			'effort_score': effort_score,
+			'Scanning Effort Score': scanning_effort_score,
 			'hits': hits,
 			'grid_name': grid_name,
 			'position_x': data['Position'][0],
@@ -308,7 +334,7 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid)
 
 	return word_count, phrase_count, cell_data_list, total_hits, num_cells
 
-def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2):
+def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2, scan_time_per_unit, selection_time):
 	# Initialize variables
 	word_counts_1, phrase_counts_1, effort_scores_1, cell_data_1, total_hits_1, num_cells_1 = Counter(), 0, [], [], 0, 0
 	word_counts_2, phrase_counts_2, effort_scores_2, cell_data_2, total_hits_2, num_cells_2 = Counter(), 0, [], [], 0, 0
@@ -316,7 +342,7 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 	# Process each file in gridset 1
 	for file in grid_xml_files_1:
 		word_count, phrase_count, cell_data, hits, num_cells = process_single_grid_file(
-			file, navigation_map1, screen_dimensions, home_grid1
+			file, navigation_map1, screen_dimensions, home_grid1, scan_time_per_unit, selection_time
 		)
 		word_counts_1.update(word_count)
 		phrase_counts_1 += phrase_count
@@ -328,7 +354,7 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 	# Process each file in gridset 2
 	for file in grid_xml_files_2:
 		word_count, phrase_count, cell_data, hits, num_cells = process_single_grid_file(
-			file, navigation_map2, screen_dimensions, home_grid2
+			file, navigation_map2, screen_dimensions, home_grid2, scan_time_per_unit, selection_time
 		)
 		word_counts_2.update(word_count)
 		phrase_counts_2 += phrase_count
@@ -402,19 +428,20 @@ def analyze_single_gridset(grid_xml_files, navigation_map, screen_dimensions, ho
 	}
 
 
-def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, home_grid):
+def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time):
 	# Initialize list for CSV data
 	csv_data = []
 
 	# Process grid files
 	for file in grid_xml_files:
 		_, _, cell_data, _, _ = process_single_grid_file(
-			file, navigation_map, screen_dimensions, home_grid
+			file, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time
 		)
 		for data in cell_data:
 			csv_data.append({
 				'Word/Phrase': data['text'],
 				'Effort Score': data['effort_score'],
+				'Scanning Effort Score': data['Scanning Effort Score'],
 				'Hits': data['hits'],
 				'Grid Name': data['grid_name'],
 				'Actual Position X': data['position_x'],
@@ -476,6 +503,9 @@ def main():
 	args = parser.parse_args()
 	screen_dimensions = (1920, 1080)  # Define screen dimensions
 
+	scan_time_per_unit = 1	# Example value, adjust as needed
+	selection_time = 0.5  # Example value, adjust as needed
+	
 	home_grid1 = args.gridset1home or get_home_grid_from_settings("extracted1/Settings0/settings.xml")
 	extract_gridset_contents(args.gridset1, "extracted1")
 	navigation_map1, relevant_xml_files_1 = build_navigation_map_and_find_relevant_files(os.path.join("extracted1", "Grids", home_grid1, "grid.xml"))
@@ -492,10 +522,10 @@ def main():
 		navigation_map2, relevant_xml_files_2 = build_navigation_map_and_find_relevant_files(os.path.join("extracted2",	 "Grids", home_grid2, "grid.xml"))
 	
 		# Process and save CSV data for each gridset
-		gridset1_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
+		gridset1_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1,scan_time_per_unit, selection_time)
 		save_to_csv(gridset1_data, 'gridset1_data.csv')
 
-		gridset2_data = process_gridset_for_csv(relevant_xml_files_2, navigation_map2, screen_dimensions, home_grid2)
+		gridset2_data = process_gridset_for_csv(relevant_xml_files_2, navigation_map2, screen_dimensions, home_grid2,scan_time_per_unit, selection_time)
 		save_to_csv(gridset2_data, 'gridset2_data.csv')
 
 		deduplicated_words1 = deduplicate_dicts(gridset1_data)
@@ -511,12 +541,12 @@ def main():
 		save_to_csv(gridset2_unique, 'gridset2unique_data.csv')
 
 		# Compare gridsets
-		results = compare_gridsets(relevant_xml_files_1, relevant_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2)
+		results = compare_gridsets(relevant_xml_files_1, relevant_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2, scan_time_per_unit, selection_time)
 
 
 	else:
 		# Compare gridsets
-		gridset_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1)
+		gridset_data = process_gridset_for_csv(relevant_xml_files_1, navigation_map1, screen_dimensions, home_grid1,scan_time_per_unit, selection_time)
 		save_to_csv(gridset_data, 'gridset_data.csv')
 
 		# Analyze single gridset
