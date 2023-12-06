@@ -3,10 +3,10 @@ import argparse
 from difflib import get_close_matches
 
 def read_csv(file_path):
-    # Read the CSV file and return a dictionary mapping words/phrases to their metrics
-    with open(file_path, mode='r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        return {row['Word/Phrase'].strip().lower(): row for row in reader}
+	# Read the CSV file and return a dictionary mapping words/phrases to their metrics
+	with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+		reader = csv.DictReader(file)
+		return {row['Word/Phrase'].strip().lower(): row for row in reader}
 
 def find_alternative_paths(word, word_data):
 	alternatives = []
@@ -68,14 +68,18 @@ def calculate_total_effort(sentence, word_data, input_technique, spelling_page=N
 	print("Sentence Analysis:\n")
 	for word in words:
 		# Find path and effort, and check if spelling is needed
-		path, effort, is_spelling = find_path_and_effort(word, word_data, input_technique, spelling_page)
-		if is_spelling:
-			# Handle spelling and display the spelling paths
-			print(f"Spelling word: '{word}'")
-			for letter, letter_path, letter_effort in path:
+		path, effort, _ = find_path_and_effort(word, word_data, input_technique, spelling_page)
+		print(f"Direct Lookup for '{word}':\n  - Path: {path}\n	 - Effort: {effort}\n")
+		paths.append((word, path, effort))
+		# Spelling
+		if spelling_page:
+			spelling_effort, spelling_paths = spell_word_effort(word, word_data, input_technique, spelling_page)
+			print(f"Spelling '{word}':")
+			for letter, letter_path, letter_effort in spelling_paths:
 				print(f"  Letter '{letter}': Path - {letter_path}, Effort - {letter_effort}")
-			paths.extend(path)
-			print(f"  Total spelling effort for '{word}': {effort}\n")
+			print(f"  Total spelling effort for '{word}': {spelling_effort}\n")
+			paths.extend(spelling_paths)  # Include spelling paths
+			total_effort += spelling_effort
 		else:
 			alternatives = find_alternative_paths(word, word_data)
 			# Limiting the number of alternatives displayed
@@ -102,35 +106,39 @@ def calculate_total_effort(sentence, word_data, input_technique, spelling_page=N
 
 
 def spell_word_effort(word, word_data, input_technique, spelling_page):
-	total_spelling_effort = 0
-	spelling_paths = []
-	# Get the effort score and path for the spelling page itself
-	# This is assuming that your word_data structure includes entries for pages themselves with their effort scores
-	if spelling_page.lower().strip() in word_data:
-		spelling_page_data = word_data[spelling_page.lower().strip()]
-		page_effort = float(word_data[spelling_page.lower()]['Effort Score'])
-		page_path = word_data[spelling_page.lower()]['Path']
-	else:
-		print(f"Spelling page not found: {spelling_page}")
-		page_effort = 0	 # Default to zero if not found
-		page_path = "Default Spelling Path"
-	
-	for letter in word.lower():
-		# Assuming that each letter's effort score is available directly from the spelling page
-		# The effort score for each letter is added on top of the page's base effort
-		if letter in word_data[spelling_page.lower()]:
-			letter_effort = page_effort + float(word_data[spelling_page.lower()][letter]['Effort Score'])
-		else:
-			letter_effort = page_effort	 # Use the page effort score if the letter is not found
-		total_spelling_effort += letter_effort
-		# For the first letter, we include the path to the spelling page. For subsequent letters,
-		# we stay on the spelling page (path is the same and does not need to be added again).
-		if not spelling_paths:	# If this is the first letter, we include the path
-			spelling_paths.append((letter, page_path, letter_effort))
-		else:  # For subsequent letters, the path is the same as the spelling page
-			spelling_paths.append((letter, spelling_page, letter_effort))
-	
-	return total_spelling_effort, spelling_paths
+    total_spelling_effort = 0
+    spelling_paths = []
+    # Normalize spelling page name
+    normalized_spelling_page = spelling_page.lower().strip()
+
+    # If the spelling page exists in word_data
+    if normalized_spelling_page in word_data:
+        page_path = word_data[normalized_spelling_page]['Path']
+        page_effort = float(word_data[normalized_spelling_page]['Effort Score'])
+        
+        for letter in word.lower():
+            # Assuming each letter's effort score is under the spelling page
+            letter_key = f"{normalized_spelling_page}_{letter}"
+            if letter_key in word_data:
+                letter_effort = float(word_data[letter_key]['Effort Score'])
+            else:
+                letter_effort = page_effort  # If the letter is not found, use the page's base effort
+
+            # Add the page path only for the first letter
+            if not spelling_paths:
+                spelling_paths.append((letter, page_path, letter_effort))
+            else:
+                spelling_paths.append((letter, "Same as previous", letter_effort))
+            
+            total_spelling_effort += letter_effort
+
+    else:
+        print(f"Spelling page '{spelling_page}' not found in word data.")
+        # Handle case where spelling page is not found
+        # ...
+
+    return total_spelling_effort, spelling_paths
+
 
 
 
@@ -141,11 +149,11 @@ def main(csv_file, sentence, input_technique,spelling_page):
 	print("Paths:", paths)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Analyze the effort to construct a sentence in an AAC device.')
-    parser.add_argument('csv_file', type=str, help='Path to the CSV file')
-    parser.add_argument('sentence', type=str, help='Phrase, sentence, or word to analyze')
-    parser.add_argument('--input_technique', type=str, default='direct', choices=['direct', 'scanning'], help='Input technique: direct or scanning (default: direct)')
-    parser.add_argument('--spelling-page', type=str, help='Name of the spelling page for lookup')
+	parser = argparse.ArgumentParser(description='Analyze the effort to construct a sentence in an AAC device.')
+	parser.add_argument('csv_file', type=str, help='Path to the CSV file')
+	parser.add_argument('sentence', type=str, help='Phrase, sentence, or word to analyze')
+	parser.add_argument('--input_technique', type=str, default='direct', choices=['direct', 'scanning'], help='Input technique: direct or scanning (default: direct)')
+	parser.add_argument('--spelling-page', type=str, help='Name of the spelling page for lookup')
 
-    args = parser.parse_args()
-    main(args.csv_file, args.sentence, args.input_technique, args.spelling_page)
+	args = parser.parse_args()
+	main(args.csv_file, args.sentence, args.input_technique, args.spelling_page)
