@@ -325,6 +325,7 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid,
 	cell_data_list = []
 	total_hits = 0
 	num_cells = 0
+	word_type_count = Counter()
 
 	for data in combined_contents:
 		word_count.update(data['Text'].split())
@@ -361,6 +362,9 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid,
 			effort_score = 0
 		num_cells += 1
 		
+		# Check if the text is a phrase (more than one word) or a single word
+		word_type = 'PHRASE' if len(data['Text'].split()) > 1 else get_word_type(data['Text'])
+		word_type_count[word_type] += 1 
 		cell_data_list.append({
 			'text': data['Text'],
 			'effort_score': effort_score,
@@ -372,19 +376,22 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid,
 			'xy': data['XY'],
 			'position': data['Position'],
 			'path': path_str,
-			'cell_type': data['CellType']
+			'cell_type': data['CellType'],
+			'word_type':word_type
 		})
 
-	return word_count, phrase_count, cell_data_list, total_hits, num_cells
+	return word_count, phrase_count, cell_data_list, total_hits, num_cells, word_type_count
 
 def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, navigation_map2, screen_dimensions, home_grid1, home_grid2, scan_time_per_unit, selection_time):
 	# Initialize variables
 	word_counts_1, phrase_counts_1, effort_scores_1, cell_data_1, total_hits_1, num_cells_1 = Counter(), 0, [], [], 0, 0
 	word_counts_2, phrase_counts_2, effort_scores_2, cell_data_2, total_hits_2, num_cells_2 = Counter(), 0, [], [], 0, 0
-
+	total_word_type_count1 = Counter()
+	total_word_type_count2 = Counter()
+	
 	# Process each file in gridset 1
 	for file in grid_xml_files_1:
-		word_count, phrase_count, cell_data, hits, num_cells = process_single_grid_file(
+		word_count, phrase_count, cell_data, hits, num_cells, word_type_count = process_single_grid_file(
 			file, navigation_map1, screen_dimensions, home_grid1, scan_time_per_unit, selection_time
 		)
 		word_counts_1.update(word_count)
@@ -393,10 +400,11 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 		cell_data_1.extend(cell_data)
 		total_hits_1 += hits
 		num_cells_1 += num_cells
+		total_word_type_count1.update(word_type_count)  
 
 	# Process each file in gridset 2
 	for file in grid_xml_files_2:
-		word_count, phrase_count, cell_data, hits, num_cells = process_single_grid_file(
+		word_count, phrase_count, cell_data, hits, num_cells, word_type_count = process_single_grid_file(
 			file, navigation_map2, screen_dimensions, home_grid2, scan_time_per_unit, selection_time
 		)
 		word_counts_2.update(word_count)
@@ -405,6 +413,7 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 		cell_data_2.extend(cell_data)
 		total_hits_2 += hits
 		num_cells_2 += num_cells
+		total_word_type_count2.update(word_type_count)  
 
 	# Calculate the total, unique, and shared words
 	unique_words_1 = set(word_counts_1)
@@ -431,6 +440,8 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 		"Exclusive Words in Gridset 2": len(exclusive_words_2),
 		"Phrases in Gridset 1": phrase_counts_1,
 		"Phrases in Gridset 2": phrase_counts_2,
+		"Word Type Counts 1:": total_word_type_count1,
+		"Word Type Counts 2:": total_word_type_count2,
 		"Total Pages in Gridset 1": total_pages_1,
 		"Total Pages in Gridset 2": total_pages_2,
 		"Total Buttons in Gridset 1": total_buttons_1,
@@ -445,15 +456,17 @@ def compare_gridsets(grid_xml_files_1, grid_xml_files_2, navigation_map1, naviga
 
 def analyze_single_gridset(grid_xml_files, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time):
 	word_counts, phrase_counts, cell_data, total_hits, num_cells = Counter(), 0, [], 0, 0
-
+	total_word_type_count = Counter()
+	
 	# Process each file in the gridset
 	for file in grid_xml_files:
-		word_count, phrase_count, cells, hits, cells_count = process_single_grid_file(file, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time)
+		word_count, phrase_count, cells, hits, cells_count, word_type_count = process_single_grid_file(file, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time)
 		word_counts.update(word_count)
 		phrase_counts += phrase_count
 		cell_data.extend(cells)
 		total_hits += hits
 		num_cells += cells_count
+		total_word_type_count.update(word_type_count)
 
 	unique_words = set(word_counts)
 	total_pages = len(set(file for file in grid_xml_files))
@@ -464,6 +477,7 @@ def analyze_single_gridset(grid_xml_files, navigation_map, screen_dimensions, ho
 		"Total Words": sum(word_counts.values()),
 		"Unique Words": len(unique_words),
 		"Phrases": phrase_counts,
+		"Word Type Counts:": total_word_type_count,
 		"Total Pages": total_pages,
 		"Total Buttons": total_buttons,
 		"Average Hits": round((total_hits / num_cells if num_cells > 0 else 0),2),
@@ -477,13 +491,10 @@ def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, h
 
 	# Process grid files
 	for file in grid_xml_files:
-		_, _, cell_data, _, _ = process_single_grid_file(
+		_, _, cell_data, _, _, _ = process_single_grid_file(
 			file, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time
 		)
 		for data in cell_data:
-			text = data['text']
-			# Check if the text is a phrase (more than one word) or a single word
-			word_type = 'PHRASE' if len(text.split()) > 1 else get_word_type(text)
 			csv_data.append({
 				'Word/Phrase': data['text'],
 				'Effort Score': data['effort_score'],
@@ -495,7 +506,7 @@ def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, h
 				'XY': data['xy'],
 				'Path': data['path'],
 				'Cell Type': data['cell_type'],
-				'Word Type':word_type
+				'Word Type':data['word_type']
 			})
 
 	return csv_data
