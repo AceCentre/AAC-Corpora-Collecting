@@ -84,6 +84,23 @@ Note it also spits out a range of csv files for the Gridsets of words and effort
 ## Output
 The program generates several CSV files with comprehensive data including word/phrase, effort scores, scanning effort scores, grid names, positions, and word types. These CSV files are stored in the specified output directory.
 
+### Word Types
+
+This is done using the brown corpus and NLTK. A quick reminder of what the types mean:
+
+- NOUN: This tag is used for words that are nouns, which are typically people, places, things, or ideas. Examples include "dog", "city", "happiness".
+- PHRASE: Represents multi-word expressions or phrases.
+- ADV (Adverb): Adverbs modify verbs, adjectives, or other adverbs. They often express manner, place, time, frequency, degree, level of certainty, etc. Examples include "quickly", "here", "very".
+- VERB: Verbs are action words or state of being words. Examples include "run", "is", "think".
+- ADJ (Adjective): Adjectives describe or modify nouns. They can indicate size, quantity, color, etc. Examples include "big", "blue", "happy".
+- PRON (Pronoun): Pronouns stand in for nouns or noun phrases. Examples include "he", "they", "it".
+- ADP (Adposition): This can refer to prepositions and postpositions used to express spatial or temporal relations or mark various semantic roles. Examples include "in", "at", "by".
+- NUM (Numeral): Numerals are words that denote numbers. Examples include "one", "first", "2019".
+- DET (Determiner): Determiners are words placed in front of nouns to clarify what the noun refers to. Examples include "the", "a", "these".
+- CONJ (Conjunction): Conjunctions connect clauses, sentences, words, or other parts of speech. Examples include "and", "but", "or".
+- PRT (Particle): Particles are function words that must be associated with another word or phrase to impart meaning and do not fit well into other categories. This can include infinitive markers like "to" in "to run".
+- X: This tag is often used for words that do not belong to any of the above categories or cannot be easily classified. It can also represent words or fragments that are not understood.
+
 ## Warnings
 
 - Effort scores are based on this: https://docs.google.com/document/d/1ZJAt1JkpXcHgazEkWMFxxD_l117eD21p1uEFLMqjrjA/edit#heading=h.h0hbg6a3svdx - we havent checked this much yet
