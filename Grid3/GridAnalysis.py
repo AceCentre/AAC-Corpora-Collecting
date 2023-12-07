@@ -7,7 +7,50 @@ from collections import Counter
 from collections import deque
 from collections import defaultdict
 import csv
+import subprocess
+import sys
 
+
+def install_and_import_nltk():
+	try:
+		import nltk
+		from nltk import word_tokenize, pos_tag
+		from nltk.corpus import brown
+	except ImportError:
+		print("Installing NLTK. Please wait...")
+		subprocess.check_call([sys.executable, "-m", "pip", "install", "nltk"])
+		import nltk
+		from nltk import word_tokenize, pos_tag
+		from nltk.corpus import brown
+		print("NLTK has been successfully installed.")
+
+	# Check for specific NLTK packages and download if necessary
+	required_nltk_packages = ["punkt", "averaged_perceptron_tagger", "universal_tagset"]
+	for package in required_nltk_packages:
+		try:
+			nltk.data.find(f"tokenizers/{package}")
+		except LookupError:
+			nltk.download(package)
+
+try:
+	import nltk
+	from nltk import word_tokenize, pos_tag
+	from nltk.corpus import brown
+except ImportError:
+	install_and_import_nltk()
+
+
+def get_word_type(word):
+	# Tokenize the word or phrase
+	tokens = word_tokenize(word)
+
+	# Tag part of speech using the universal tagset
+	tagged = pos_tag(tokens, tagset='universal')
+
+	# For simplicity, consider the type of the first word in the phrase
+	word_type = tagged[0][1] if tagged else 'UNKNOWN'
+
+	return word_type
 
 def parse_xml(file_path):
 	tree = ET.parse(file_path)
@@ -286,7 +329,7 @@ def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid,
 	for data in combined_contents:
 		word_count.update(data['Text'].split())
 		phrase_count += 1 if len(data['Text'].split()) > 1 else 0
-		grid_position = data.get('XY', (1, 1))  # Default to (1, 1) if not specified
+		grid_position = data.get('XY', (1, 1))	# Default to (1, 1) if not specified
 		path_to_button = find_path(home_grid, grid_name, navigation_map)
 		path_str = ' -> '.join(path_to_button)
 		rows = len(root.findall(".//RowDefinitions/RowDefinition"))
@@ -438,6 +481,9 @@ def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, h
 			file, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time
 		)
 		for data in cell_data:
+			text = data['text']
+			# Check if the text is a phrase (more than one word) or a single word
+			word_type = 'PHRASE' if len(text.split()) > 1 else get_word_type(text)
 			csv_data.append({
 				'Word/Phrase': data['text'],
 				'Effort Score': data['effort_score'],
@@ -448,7 +494,8 @@ def process_gridset_for_csv(grid_xml_files, navigation_map, screen_dimensions, h
 				'Actual Position Y': data['position_y'],
 				'XY': data['xy'],
 				'Path': data['path'],
-				'Cell Type': data['cell_type']
+				'Cell Type': data['cell_type'],
+				'Word Type':word_type
 			})
 
 	return csv_data
