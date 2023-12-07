@@ -29,9 +29,7 @@ The Gridset Analysis Tool is designed to analyze and compare the language conten
 
 Run the tool from the command line, specifying the path to the gridset files and other optional arguments:
 
-``python gridset_analysis.py --gridset1 path/to/gridset1.gridset --gridset2 path/to/gridset2.gridset --output path/to/output
-
-``
+``python gridset_analysis.py --gridset1 path/to/gridset1.gridset --gridset2 path/to/gridset2.gridset --output path/to/output``
 
 e.g.
 
@@ -58,6 +56,8 @@ Exclusive Words in Gridset 1: 97
 Exclusive Words in Gridset 2: 95
 Phrases in Gridset 1: 487
 Phrases in Gridset 2: 550
+Word Type Counts 1:: Counter({'NOUN': 4688, 'PHRASE': 1672, 'ADV': 522, 'VERB': 506, 'ADJ': 486, 'PRON': 358, 'ADP': 282, 'NUM': 148, 'DET': 22, 'CONJ': 6, 'PRT': 4, 'X': 1})
+Word Type Counts 2:: Counter({'NOUN': 5062, 'PHRASE': 1643, 'VERB': 1188, 'ADV': 696, 'ADP': 687, 'PRON': 571, 'ADJ': 483, 'DET': 412, 'CONJ': 131, 'PRT': 127, 'NUM': 104, 'X': 1})
 Total Pages in Gridset 1: 529
 Total Pages in Gridset 2: 456
 Total Buttons in Gridset 1: 8234
@@ -84,6 +84,12 @@ Note it also spits out a range of csv files for the Gridsets of words and effort
 ## Output
 The program generates several CSV files with comprehensive data including word/phrase, effort scores, scanning effort scores, grid names, positions, and word types. These CSV files are stored in the specified output directory.
 
+## Warnings
+
+- Effort scores are based on this: https://docs.google.com/document/d/1ZJAt1JkpXcHgazEkWMFxxD_l117eD21p1uEFLMqjrjA/edit#heading=h.h0hbg6a3svdx - we havent checked this much yet
+- Note top scores etc in output shouldnt be relied on 
+- Note too summary data is largely on total - not de-deuplicated words. Use the CSVs to do your own Analysis
+
 ## License
 MIT
 
@@ -98,7 +104,10 @@ Contributions to the Gridset Analysis Tool are welcome. Please read `CONTRIBUTIN
 
 
 
-- Grid-FindPathForSentence.py. Give it csv from our analysis - then a sentence to test. See what the effort scores for scanning or direct selection and alternatives. 
+# Grid-FindPathForSentence.py.
+
+## Overview 
+Give it csv from our analysis - then a sentence to test. See what the effort scores for scanning or direct selection and alternatives. 
 	
 ```python
 	
