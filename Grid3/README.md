@@ -128,7 +128,7 @@ Give it csv from our analysis - then a sentence to test. See what the effort sco
 	
 ```python
 	
-	 python Grid-FindPathForSentence.py gridset_data.csv "What colour eyes do you have ?" --spelling-page "18 SPELLING - switch frequency ETOS keyboard" --input_technique direct
+	 python Grid-FindPathForSentence.py gridset_data.csv "What colour eyes do you have ?" --spelling-page "18e SPELLING qwerty phonics keyboard" --input_technique direct
 Sentence Analysis:
 
 Direct Lookup for 'what':
@@ -167,20 +167,49 @@ Direct Lookup for 'have':
   - Number of Alternative Paths: 22
   - Hits Range for Alternative Paths: min 2 - max 9
 
-No letters found for spelling page '18 SPELLING - switch frequency ETOS keyboard'.
-No letters found for spelling page '18 SPELLING - switch frequency ETOS keyboard'.
+18e spelling qwerty phonics keyboard
+18e spelling qwerty phonics keyboard
 Spelling '?':
+  Letter '?': Path - Default Spelling Path, Effort - 0
   Total spelling effort for '?': 0
 
 Total Effort for 'direct' selection: 6.02
 
 Demonstrating spelling of the entire sentence:
 
-No letters found for spelling page '18 SPELLING - switch frequency ETOS keyboard'.
+18e spelling qwerty phonics keyboard
 Spelling Entire Sentence: 'What colour eyes do you have ?'
-  Total Effort for Spelling Entire Sentence: 0
-
-	
+  Letter 'w': Path - Default Spelling Path, Effort - 4.34
+  Letter 'h': Path - Same as previous, Effort - 4.04
+  Letter 'a': Path - Same as previous, Effort - 4.3
+  Letter 't': Path - Same as previous, Effort - 4.13
+  Letter ' ': Path - Same as previous, Effort - 0
+  Letter 'c': Path - Same as previous, Effort - 4.15
+  Letter 'o': Path - Same as previous, Effort - 4.23
+  Letter 'l': Path - Same as previous, Effort - 4.18
+  Letter 'o': Path - Same as previous, Effort - 4.23
+  Letter 'u': Path - Same as previous, Effort - 4.12
+  Letter 'r': Path - Same as previous, Effort - 4.18
+  Letter ' ': Path - Same as previous, Effort - 0
+  Letter 'e': Path - Same as previous, Effort - 4.26
+  Letter 'y': Path - Same as previous, Effort - 4.11
+  Letter 'e': Path - Same as previous, Effort - 4.26
+  Letter 's': Path - Same as previous, Effort - 4.3
+  Letter ' ': Path - Same as previous, Effort - 0
+  Letter 'd': Path - Same as previous, Effort - 4.2
+  Letter 'o': Path - Same as previous, Effort - 4.23
+  Letter ' ': Path - Same as previous, Effort - 0
+  Letter 'y': Path - Same as previous, Effort - 4.11
+  Letter 'o': Path - Same as previous, Effort - 4.23
+  Letter 'u': Path - Same as previous, Effort - 4.12
+  Letter ' ': Path - Same as previous, Effort - 0
+  Letter 'h': Path - Same as previous, Effort - 4.04
+  Letter 'a': Path - Same as previous, Effort - 4.3
+  Letter 'v': Path - Same as previous, Effort - 3.97
+  Letter 'e': Path - Same as previous, Effort - 4.26
+  Letter ' ': Path - Same as previous, Effort - 0
+  Letter '?': Path - Same as previous, Effort - 0
+  Total Effort for Spelling Entire Sentence: 96.29	
 ```
 
 - addFrequencyData.py SomeFile.csv

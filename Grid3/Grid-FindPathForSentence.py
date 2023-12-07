@@ -11,15 +11,6 @@ def read_csv(file_path):
 			data_list.append(row)  # Add each row as a dictionary to the list
 		return data_list
 
-
-def find_alternative_paths(word, word_data):
-	alternatives = []
-	word = word.lower().strip()
-	for row in word_data:
-		if row['Word/Phrase'].lower().strip() == word and row['Path'] not in alternatives:
-			alternatives.append(row['Path'])
-	return path, float(effort_score), int(data['Hits']), False	# Add Hits to the returned values
-
 def find_alternative_paths(word, word_data, input_technique):
 	alternatives = []
 	for row in word_data:
@@ -123,11 +114,11 @@ def calculate_total_effort(sentence, word_data, input_technique, spelling_page=N
 def find_all_letters(data_list, spelling_page):
 	normalized_spelling_page = spelling_page.lower().strip()
 	letters = []
-
+	print(normalized_spelling_page)
+	
 	for row in data_list:
 		if row['Grid Name'].lower().strip() == normalized_spelling_page:
 			letters.append(row)
-
 	return letters
 
 
@@ -135,7 +126,7 @@ def spell_word_effort(word, word_data, input_technique, spelling_page):
 	total_spelling_effort = 0
 	spelling_paths = []
 	normalized_spelling_page = spelling_page.lower().strip()
-
+			
 	letters = find_all_letters(word_data, spelling_page)
 
 	if not letters:
