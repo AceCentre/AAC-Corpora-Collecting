@@ -1,1 +1,5 @@
 .vscode/launch.json
+extracted/*
+.csv
+.xml
+.DS_Store
