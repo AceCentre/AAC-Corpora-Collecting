@@ -128,50 +128,58 @@ Give it csv from our analysis - then a sentence to test. See what the effort sco
 	
 ```python
 	
-	python Grid-FindPathForSentence.py gridset_data.csv "How are you ?" --input_technique scanning
+	 python Grid-FindPathForSentence.py gridset_data.csv "What colour eyes do you have ?" --spelling-page "18 SPELLING - switch frequency ETOS keyboard" --input_technique direct
 Sentence Analysis:
 
-Word: 'how'
-  - Main Path: 01 CORE pg1 TEEN -> 03 QUESTIONS
-  - Effort: 2.5
-  - Alternative Paths:
-    - 01 CORE pg1 TEEN -> 04a ACTIONS main -> 04d ACTIONS doing to things verbs pg1
-    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 23 APPS menu TEEN -> 23 APPS Alexa Home -> 23 APPS Alexa Music home -> 23 APPS Alexa Music Album
-    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 15aa TOPICS index pg1 -> 15c TOPICS Jokes
-    ... and 26 more alternatives.
+Direct Lookup for 'what':
+  - Path: 01 CORE pg1 TEEN -> 17a MESSAGES index
+  - Effort: 1.94
+  - Number of Alternative Paths: 63
+  - Hits Range for Alternative Paths: min 2 - max 9
 
-Word: 'are'
-  - Main Path: 01 CORE pg1 TEEN -> 03 QUESTIONS
-  - Effort: 5.5
-  - Alternative Paths:
-    - 01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS social care TEEN
-    - 01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS social care TEEN
-    - 01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS social care TEEN
-    ... and 27 more alternatives.
+Direct Lookup for 'colour':
+  - Path: 01 CORE pg1 TEEN -> 04a ACTIONS main -> 04f ACTIONS A to Z list
+  - Effort: 0.0
+  - Number of Alternative Paths: 15
+  - Hits Range for Alternative Paths: min 3 - max 9
 
-Word: 'you'
-  - Main Path: 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 10 NEWS core
-  - Effort: 2.5
-  - Alternative Paths:
-    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 10 NEWS core
-    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 09 CHAT core
-    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08i PLAY cars core -> 08i PLAY cars expanded
-    ... and 84 more alternatives.
+Direct Lookup for 'eyes':
+  - Path: 01 CORE pg1 TEEN -> 15aa TOPICS index pg1 TEEN -> 15aa TOPICS index pg2 TEEN -> 15 TOPICS race TEEN
+  - Effort: 4.08
+  - Number of Alternative Paths: 4
+  - Hits Range for Alternative Paths: min 4 - max 9
 
-Word not found: ?
-Word: '?'
-  - Main Path: Spelling Path (if applicable)
-  - Effort: 0
-  - Alternative Paths:
-    - 01 CORE pg1 TEEN -> 07a DAILY LIFE activity index TEEN -> 07x DAILY LIFE eating out core TEEN -> 07x DAILY LIFE eating out expanded TEEN
-    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08i PLAY cars core -> 08i PLAY cars expanded
-    - 01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 08a PLAY activity index -> 08i PLAY cars core -> 08i PLAY cars expanded
-    ... and 118 more alternatives.
+Direct Lookup for 'do':
+  - Path: 01 CORE pg1 TEEN -> 04a ACTIONS main -> 04f ACTIONS A to Z list
+  - Effort: 0.0
+  - Number of Alternative Paths: 290
+  - Hits Range for Alternative Paths: min 2 - max 9
 
-Total Effort for 'scanning' selection: 10.5
+Direct Lookup for 'you':
+  - Path: 01 CORE pg1 TEEN -> 05a DESCRIBE main -> 05g DESCRIBE A to Z list
+  - Effort: 0.0
+  - Number of Alternative Paths: 288
+  - Hits Range for Alternative Paths: min 1 - max 9
 
-Total Effort for 'scanning' selection: 10.5
-Paths: ['01 CORE pg1 TEEN -> 03 QUESTIONS', '01 CORE pg1 TEEN -> 03 QUESTIONS', '01 CORE pg1 TEEN -> 19 MAGIC WAND TEEN -> 19 MAGIC WAND access settings -> 00 Choose Version -> 00 Child vocabulary -> 01 CORE pg1 -> 01 CORE pg2 -> 10 NEWS core', 'Spelling Path (if applicable)']
+Direct Lookup for 'have':
+  - Path: 01 CORE pg1 TEEN -> 04a ACTIONS main -> 04f ACTIONS A to Z list
+  - Effort: 0.0
+  - Number of Alternative Paths: 22
+  - Hits Range for Alternative Paths: min 2 - max 9
+
+No letters found for spelling page '18 SPELLING - switch frequency ETOS keyboard'.
+No letters found for spelling page '18 SPELLING - switch frequency ETOS keyboard'.
+Spelling '?':
+  Total spelling effort for '?': 0
+
+Total Effort for 'direct' selection: 6.02
+
+Demonstrating spelling of the entire sentence:
+
+No letters found for spelling page '18 SPELLING - switch frequency ETOS keyboard'.
+Spelling Entire Sentence: 'What colour eyes do you have ?'
+  Total Effort for Spelling Entire Sentence: 0
+
 	
 ```
 
