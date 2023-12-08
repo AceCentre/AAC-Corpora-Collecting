@@ -14,27 +14,40 @@ def read_csv(file_path):
 def find_alternative_paths(word, word_data, input_technique):
 	alternatives = []
 	for row in word_data:
-		if word in row['Word/Phrase'].lower():
+		if row['Word/Phrase'].lower().strip() == word:
 			effort_score = row['Effort Score'] if input_technique == 'direct' else row['Scanning Effort Score']
 			alternatives.append((row['Path'], float(effort_score), int(row['Hits'])))
 	return alternatives
 
+
 def find_path_and_effort(word, word_data, input_technique, spelling_page=None):
 	try:
-		word_key = word.lower()	 # assuming words in the CSV are in lower case
+		word_key = word.lower().strip()
+		exact_match = None
+		best_fuzzy_match = None
+		best_ratio = 0.9  # Higher ratio for stricter fuzzy matching
+
 		for data in word_data:
-			if data['Word/Phrase'].lower() == word_key:
-				path = data['Path']
-				effort_score = data['Effort Score'] if input_technique == 'direct' else data['Scanning Effort Score']
-				#print(f"Match found for '{word}': {path}, Effort: {effort_score}") # Debugging statement
-				return path, float(effort_score), False	 # Found the word, no spelling done
-		# If the word is not found in the word_data list, use spelling
-		if spelling_page:
-			#print(f"Word '{word}' not found, using spelling page: {spelling_page}")	 # Debugging statement
+			data_word = data['Word/Phrase'].lower().strip()
+			# Exact match check
+			if data_word == word_key:
+				exact_match = data
+				break
+			# Fuzzy match check
+			ratio = SequenceMatcher(None, word_key, data_word).ratio()
+			if ratio > best_ratio and ratio > SequenceMatcher(None, best_fuzzy_match, data_word).ratio() if best_fuzzy_match else True:
+				best_fuzzy_match = data
+
+		if exact_match:
+			path, effort = extract_path_effort(exact_match, input_technique)
+			return path, effort, False
+		elif best_fuzzy_match:
+			path, effort = extract_path_effort(best_fuzzy_match, input_technique)
+			return path, effort, False
+		elif spelling_page:
 			spelling_effort, spelling_paths = spell_word_effort(word, word_data, input_technique, spelling_page)
-			return spelling_paths, spelling_effort, True  # Spelling required
+			return spelling_paths, spelling_effort, True
 		else:
-			#print(f"Word '{word}' not found and no spelling page provided")	 # Debugging statement
 			return "Default Path", 0, False
 	except KeyError as e:
 		print(f"KeyError: The word '{word}' was not found in the data.")
@@ -45,6 +58,16 @@ def find_path_and_effort(word, word_data, input_technique, spelling_page=None):
 	except Exception as e:
 		print(f"An unexpected error occurred: {e}")
 		return "Error Path", 0, False
+
+def extract_path_effort(data, input_technique):
+	try:
+		path = data['Path']
+		effort_score = data['Effort Score'] if input_technique == 'direct' else data['Scanning Effort Score']
+		return path, float(effort_score)
+	except ValueError as e:
+		print(f"Error converting effort score for word '{data['Word/Phrase']}': {e}")
+		return data['Path'], 0	# Return a default effort score of 0 if conversion fails
+
 
 
 
@@ -73,6 +96,7 @@ def calculate_total_effort(sentence, word_data, input_technique, spelling_page=N
 	print("Sentence Analysis:\n")
 	for word in words:
 		path, effort, spelled = find_path_and_effort(word, word_data, input_technique, spelling_page)
+		#print(f"After find_path_and_effort for '{word}': Path - {path}, Effort - {effort}")
 		
 		if spelled and spelling_page:
 			# Handle spelling
