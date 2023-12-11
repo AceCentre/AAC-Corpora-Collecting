@@ -366,12 +366,17 @@ def get_home_grid_from_settings(settings_file):
         return None
 
 
+def initialize_grid_matrix(grid_rows, grid_cols):
+    return [[None for _ in range(grid_cols)] for _ in range(grid_rows)]
+
+
 def find_first_empty_cell(grid_matrix):
+    """Find the first empty cell in the grid matrix."""
     for y, row in enumerate(grid_matrix):
         for x, cell in enumerate(row):
-            if cell is None:
+            if cell is None:  # If cell is empty
                 return x, y
-    return 'N/A', 'N/A'
+    return 'N/A', 'N/A'  # Return 'N/A' if no empty cell is found
 
 
 def find_empty_position_in_row(grid_matrix, y):
@@ -397,124 +402,136 @@ def extract_combined_cell_and_wordlist_contents(xml_root, grid_name, screen_dime
     grid_rows = len(xml_root.findall(".//RowDefinitions/RowDefinition"))
     grid_cols = len(xml_root.findall(".//ColumnDefinitions/ColumnDefinition"))
 
-    grid_matrix = initialize_grid_matrix(grid_rows, grid_cols)
+    # Initialize an empty grid matrix
+    grid_matrix = [[None for _ in range(grid_cols)] for _ in range(grid_rows)]
 
+    # Process cells with known positions
     for cell in xml_root.findall(".//Cell"):
-        cell_data = {}
-        cell_x_str = cell.get('X')
-        cell_y_str = cell.get('Y')
+        cell_data = process_cell(cell, grid_rows, grid_cols, screen_dimensions)
 
-        # Convert to integer if possible, else default to 'N/A'
-        cell_x = int(
-            cell_x_str) if cell_x_str and cell_x_str.isdigit() else 'N/A'
-        cell_y = int(
-            cell_y_str) if cell_y_str and cell_y_str.isdigit() else 'N/A'
+        if cell_data['Position'] != ('N/A', 'N/A'):
+            adjusted_cell_x, adjusted_cell_y = cell_data['Position']
+            grid_matrix[adjusted_cell_y][adjusted_cell_x] = cell_data
+            combined_contents.append(cell_data)
+        else:
+            # Keep the cell data for the second pass
+            combined_contents.append(cell_data)
 
-        # Determine if cell_x or cell_y is missing and find the position
+    # Process cells with unknown positions in the second pass
+    for cell_data in combined_contents:
+        # Initialize cell_x and cell_y to 'N/A'
+        cell_x, cell_y = 'N/A', 'N/A'
 
-        if cell_x == 'N/A' and cell_y == 'N/A':
-            # Both coordinates are missing, find the first empty cell in the grid
+        if cell_data['Position'] == ('N/A', 'N/A'):
+            # Both coordinates are missing
             cell_x, cell_y = find_first_empty_cell(grid_matrix)
-
-        elif cell_x == 'N/A':
-            # X coordinate is missing, find the first empty position in Y row
+        elif cell_data['Position'][0] == 'N/A':
+            # X coordinate is missing
+            _, cell_y = cell_data['Position']
             cell_x, _ = find_empty_position_in_row(grid_matrix, cell_y)
-
-        elif cell_y == 'N/A':
-            # Y coordinate is missing, find the first empty position in X column
-            # Both coordinates are present, use them
+        elif cell_data['Position'][1] == 'N/A':
+            # Y coordinate is missing
+            cell_x, _ = cell_data['Position']
             _, cell_y = find_empty_position_in_column(grid_matrix, cell_x)
 
-        if isinstance(cell_x, int) and isinstance(cell_y, int):
-            # Adjust for 0-based indexing if cell_x and cell_y are 1-based
+        if cell_x != 'N/A' and cell_y != 'N/A':
             adjusted_cell_x = cell_x - 1
             adjusted_cell_y = cell_y - 1
-
-            # Check if adjusted indices are within the range of grid_matrix dimensions
+            cell_data['Position'] = (adjusted_cell_x, adjusted_cell_y)
             if 0 <= adjusted_cell_x < len(grid_matrix[0]) and 0 <= adjusted_cell_y < len(grid_matrix):
                 grid_matrix[adjusted_cell_y][adjusted_cell_x] = cell_data
             else:
                 print(
-                    f"Adjusted cell position out of range for {grid_name}: ({adjusted_cell_x}, {adjusted_cell_y})")
+                    f"Cell position out of range for {grid_name}: ({adjusted_cell_x}, {adjusted_cell_y})")
         else:
-            print(
-                f"Invalid cell position for {grid_name}: ({cell_x}, {cell_y})")
-
-        # Default to 1 if not specified
-        scan_block = cell.get('ScanBlock', '1')
-        # Default to 1 if not specified
-        column_span = int(cell.get('ColumnSpan', '1'))
-        # Default to 1 if not specified
-        row_span = int(cell.get('RowSpan', '1'))
-        height = cell.get('Height')  # May be None
-        if isinstance(cell_x, int) and isinstance(cell_y, int):
-            cell_position = calculate_button_coordinates(
-                (cell_x, cell_y), grid_rows, grid_cols, screen_dimensions)
-        else:
-            cell_position = ('N/A', 'N/A')  # Set to 'N/A' if either is invalid
-
-        cell_data.update({
-            'ScanBlock': scan_block,
-            'ColumnSpan': column_span,
-            'RowSpan': row_span,
-            'Height': height,
-            'Position': cell_position,
-            'XY': (cell_x, cell_y),
-            'PageName': grid_name
-        })
-
-        # Check for wordlist cells
-        if cell.find(".//ContentSubType") is not None and cell.find(".//ContentSubType").text == "WordList":
-            wordlist_positions.append(cell_position)
-            wordlist_grid_positions.append((cell_x, cell_y))
-
-        # Handle text elements
-        text_elements = cell.findall(
-            ".//Content/Commands/Command[@ID='Action.InsertText']/Parameter[@Key='text']//r")
-        full_text = ' '.join(
-            [elem.text.strip() for elem in text_elements if elem.text and elem.text.strip()])
-        if full_text:
-            cell_data['Text'] = full_text
-            cell_data['CellType'] = 'Regular'
-            cell_data['CellText'] = ''
-        else:
-            cell_data['CellText'] = ''
-            cell_data['Text'] = ''  # Or some other default value
-            # You can adjust this based on your needs
-            cell_data['CellType'] = 'Non-Text'
-            caption = cell.find(".//CaptionAndImage/Caption")
-            content_type = cell.find(".//Content/ContentType")
-            if caption is not None and caption.text:
-                cell_data['CellText'] = caption.text
-            else:
-                cell_data['CellText'] = 'Unknown'
-            if content_type is not None:
-                cell_data['CellType'] = content_type.text
-
-        combined_contents.append(cell_data)
+            print(f"No available position for cell in {grid_name}")
 
     # Extract items from wordlists
     for wordlist_item in xml_root.findall(".//WordList/Items/WordListItem"):
-        word_texts = wordlist_item.findall(".//Text//r")
-        full_text = ' '.join([word_text.text.strip(
-        ) for word_text in word_texts if word_text.text and word_text.text.strip()])
-
-        if full_text:
-            position = wordlist_positions.pop(
-                0) if wordlist_positions else ('N/A', 'N/A')
-            grid_position = wordlist_grid_positions.pop(
-                0) if wordlist_grid_positions else ('N/A', 'N/A')
-            wordlist_data = {
-                'Text': full_text,
-                'Position': position,
-                'XY': grid_position,
-                'PageName': grid_name,
-                'CellType': 'WordList',
-                'CellText': ''
-            }
-            combined_contents.append(wordlist_data)
+        wordlist_data = process_wordlist_item(
+            wordlist_item, wordlist_positions, wordlist_grid_positions, grid_name)
+        position = wordlist_positions.pop(
+            0) if wordlist_positions else ('N/A', 'N/A')
+        grid_position = wordlist_grid_positions.pop(
+            0) if wordlist_grid_positions else ('N/A', 'N/A')
+        wordlist_data.update({'Position': position, 'XY': grid_position})
+        combined_contents.append(wordlist_data)
 
     return combined_contents
+
+
+def process_cell(cell, grid_rows, grid_cols, screen_dimensions):
+    # Extract X and Y coordinates
+    cell_x_str = cell.get('X')
+    cell_y_str = cell.get('Y')
+
+    cell_x = int(cell_x_str) if cell_x_str and cell_x_str.isdigit() else 'N/A'
+    cell_y = int(cell_y_str) if cell_y_str and cell_y_str.isdigit() else 'N/A'
+
+    cell_data = {}
+    if isinstance(cell_x, int) and isinstance(cell_y, int):
+        # Adjust for 0-based indexing if necessary
+        adjusted_cell_x = cell_x
+        adjusted_cell_y = cell_y
+        cell_position = (adjusted_cell_x, adjusted_cell_y)
+    else:
+        cell_position = ('N/A', 'N/A')
+
+    # Find caption and content type before the if-else block
+    caption = cell.find(".//CaptionAndImage/Caption")
+    content_type = cell.find(".//Content/ContentType")
+
+    # Handle text elements as in your original function
+    text_elements = cell.findall(
+        ".//Content/Commands/Command[@ID='Action.InsertText']/Parameter[@Key='text']//r")
+    full_text = ' '.join([elem.text.strip()
+                         for elem in text_elements if elem.text and elem.text.strip()])
+
+    if full_text:
+        cell_data['Text'] = full_text
+        cell_data['CellType'] = 'Regular'
+    else:
+        if caption is not None and caption.text:
+            cell_data['Text'] = caption.text
+        else:
+            cell_data['Text'] = ''
+        if content_type is not None:
+            cell_data['CellType'] = content_type.text
+        else:
+            cell_data['CellType'] = 'Non-Text'
+
+    # Always include CellText
+    cell_data['CellText'] = caption.text if caption is not None and caption.text else 'Unknown'
+
+    # Additional attributes
+    scan_block = cell.get('ScanBlock', '1')
+    column_span = int(cell.get('ColumnSpan', '1'))
+    row_span = int(cell.get('RowSpan', '1'))
+    height = cell.get('Height')  # May be None
+
+    cell_data['Position'] = cell_position
+    return cell_data
+
+
+def process_wordlist_item(wordlist_item, wordlist_positions, wordlist_grid_positions, grid_name):
+    word_texts = wordlist_item.findall(".//Text//r")
+    full_text = ' '.join([word_text.text.strip(
+    ) for word_text in word_texts if word_text.text and word_text.text.strip()])
+
+    if full_text:
+        position = wordlist_positions.pop(
+            0) if wordlist_positions else ('N/A', 'N/A')
+        grid_position = wordlist_grid_positions.pop(
+            0) if wordlist_grid_positions else ('N/A', 'N/A')
+        wordlist_data = {
+            'Text': full_text,
+            'Position': position,
+            'XY': grid_position,
+            'PageName': grid_name,
+            'CellType': 'WordList',
+            'CellText': ''
+        }
+    return wordlist_data
 
 
 def process_single_grid_file(file, navigation_map, screen_dimensions, home_grid, scan_time_per_unit, selection_time, consider_block_scanning=True):
