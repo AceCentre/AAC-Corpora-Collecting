@@ -1,5 +1,10 @@
 .vscode/launch.json
-extracted/*
-.csv
-.xml
-.DS_Store
+
+*.csv
+*.xml
+*.DS_Store
+# Ignore all .gridset files
+*.gridset
+
+# Ignore everything in the extracted directory
+extracted/
