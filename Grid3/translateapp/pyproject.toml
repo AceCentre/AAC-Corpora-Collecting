@@ -1,0 +1,11 @@
+[project]
+name = "translateapp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "deep-translator>=1.11.4",
+    "streamlit>=1.40.2",
+    "xmltodict>=0.14.2",
+]
