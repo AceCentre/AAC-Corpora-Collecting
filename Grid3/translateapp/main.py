@@ -119,7 +119,6 @@ def translate_text(text_list, tool, source_lang, target_lang, api_key=None, regi
     
 # Streamlit app
 st.title("Gridset Translator")
-
 st.markdown(
     """
     Welcome to the **Gridset Translator**, a tool designed to translate Gridset files for 
@@ -275,3 +274,12 @@ if uploaded_file:
     if "temp_dir" in st.session_state and st.session_state["temp_dir"]:
         st.session_state["temp_dir"].cleanup()
         st.session_state.pop("temp_dir", None)
+
+
+st.markdown("---")  # Adds a horizontal line as a separator
+st.markdown(
+    """
+    Made by
+    """
+)
+st.image("https://res.cloudinary.com/ace-cloud/image/fetch/f_auto,c_limit,w_256,q_auto/https://acecentre.org.uk/nav-logo.png", width=150)
