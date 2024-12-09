@@ -6,13 +6,14 @@ import os
 from io import BytesIO
 import tempfile
 
-def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None):
+def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None, debug_mode=False):
     try:
         tree = ET.parse(file)
         root = tree.getroot()
 
         # Log the filename for debugging
-        st.write(f"Processing file: {file}")
+        if debug_mode:
+            st.write(f"Processing file: {file}")
 
         # Find and translate relevant elements
         translated_count = 0
@@ -29,7 +30,8 @@ def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None
                     element.text = translated_text
                     translated_count += 1
                     # Debug after translation
-                    st.write(f"Translated '{original_text}' to '{translated_text}'")
+                    if debug_mode:
+                        st.write(f"Translated '{original_text}' to '{translated_text}'")
 
         # Debug the number of elements translated
         st.write(f"Total elements translated in file: {translated_count}")
@@ -146,7 +148,7 @@ if uploaded_file:
                             if debug_mode:
                                 st.write(f"Translating: {file_name}")
                             translated_xml = process_and_translate_xml(
-                                file_path, translation_tool, source_lang, target_lang, api_key
+                                file_path, translation_tool, source_lang, target_lang, api_key,  debug_mode=debug_mode
                             )
                             if translated_xml:
                                 if debug_mode:
