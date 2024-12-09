@@ -1,155 +1,155 @@
-# Parse the new uploaded XML file to understand its structure and content
-parsed_xml = ET.parse(file_path)
-
-# Create a dictionary to store parsed data
-parsed_data = {
-    "grid": {},
-    "buttons": []
-}
-
-# Extract the number of columns
-columns = parsed_xml.find("ColumnDefinitions")
-parsed_data["grid"]["columns"] = len(columns.findall("ColumnDefinition")) if columns is not None else 0
-
-# Extract the number of rows
-rows = parsed_xml.find("RowDefinitions")
-parsed_data["grid"]["rows"] = len(rows.findall("RowDefinition")) if rows is not None else 0
-
-# Extract cell/button information
-cells = parsed_xml.find("Cells")
-if cells is not None:
-    for cell in cells.findall("Cell"):
-        cell_data = {}
-        caption = cell.find(".//Caption")
-        if caption is not None:
-            cell_data["label"] = caption.text if caption.text else ""
-        parsed_data["buttons"].append(cell_data)
-
-# Display the parsed data for review (limited to first 10 buttons for brevity)
-parsed_data["buttons"][:10], parsed_data["grid"]["rows"], parsed_data["grid"]["columns"]
-
-
-# Initialize the OBF structure based on the parsed data
-obf_data = {
-    "format": "open-board-0.1",
-    "id": "1",  # Example ID, can be changed
-    "locale": "en",  # Example locale, can be changed
-    "name": "Converted Grid",  # Example name, can be changed
-    "description_html": "Converted from Grid XML format.",  # Example description, can be changed
-    "buttons": [],
-    "grid": {
-        "rows": parsed_data["grid"]["rows"],
-        "columns": parsed_data["grid"]["columns"],
-        "order": []
-    },
-    "images": []  # No images for now, can be added later
-}
-
-# Populate the buttons and the grid order based on the parsed data
-button_counter = 1  # Counter to generate button IDs
-for i, row in enumerate(range(parsed_data["grid"]["rows"])):
-    row_order = []
-    for j, col in enumerate(range(parsed_data["grid"]["columns"])):
-        button_index = i * parsed_data["grid"]["columns"] + j
-        if button_index < len(parsed_data["buttons"]):
-            label = parsed_data["buttons"][button_index].get("label", "")
-            button_id = str(button_counter)
-            obf_data["buttons"].append({
-                "id": button_id,
-                "label": label,
-            })
-            row_order.append(button_id)
-            button_counter += 1
-        else:
-            row_order.append(None)
-    obf_data["grid"]["order"].append(row_order)
-
-# Generate the OBF JSON file
-obf_json = json.dumps(obf_data, indent=4)
-
-# Save the JSON to a file
-obf_file_path = '/mnt/data/converted_grid_complex.obf'
-with open(obf_file_path, 'w', encoding='utf-8') as f:
-    f.write(obf_json)
-
-obf_file_path
-
-
-// What follows is a second type for more complex 
-
-# Importing necessary libraries
 import xml.etree.ElementTree as ET
 import json
+import argparse
+import zipfile
+import os
+import tempfile
+import shutil
 
-def grid_to_openboard(grid_xml_path, styles_xml_path, output_json_path):
+def parse_styles(styles_xml_path):
     """
-    Convert a Grid 3 board to OpenBoard format.
-
-    Parameters:
-    - grid_xml_path: str, path to Grid 3 board XML file
-    - styles_xml_path: str, path to Grid 3 styles XML file
-    - output_json_path: str, path to output OpenBoard JSON file
+    Parse the styles XML file and create a mapping for button styles.
     """
-    
-    # Parse Grid XML file
-    tree = ET.parse(grid_xml_path)
-    root = tree.getroot()
-    
-    # Parse styles XML file
-    style_tree = ET.parse(styles_xml_path)
-    style_root = style_tree.getroot()
-    
-    # Extract Grid 3 styles and map them to OpenBoard button styles
     style_mapping = {}
-    for style in style_root.findall(".//Style"):
-        key = style.attrib.get('Key')
-        back_colour = style.find('BackColour').text if style.find('BackColour') is not None else '#FFFFFFFF'
-        font_colour = style.find('FontColour').text if style.find('FontColour') is not None else '#000000FF'
-        style_mapping[key] = {
-            'backgroundColor': back_colour[:7],  # Remove alpha channel
-            'textColor': font_colour[:7]  # Remove alpha channel
-        }
-    
-    # Create OpenBoard JSON structure
-    openboard_json = {
-        'id': 'board',
-        'name': 'Board',
-        'width': len(root.find('.//ColumnDefinitions').findall('ColumnDefinition')),
-        'height': len(root.find('.//RowDefinitions').findall('RowDefinition')),
-        'buttons': []
-    }
-    
-    # Convert Grid 3 buttons to OpenBoard buttons
-    for button in root.findall(".//Button"):
-        style_key = button.find('StyleKey').text if button.find('StyleKey') is not None else 'Default'
-        style = style_mapping.get(style_key, {})
-        
-        # Extract label from Caption or WordList
-        label = ''
-        caption = button.find('Caption')
+    if styles_xml_path and os.path.exists(styles_xml_path):
+        style_tree = ET.parse(styles_xml_path)
+        style_root = style_tree.getroot()
+        for style in style_root.findall(".//Style"):
+            key = style.attrib.get("Key")
+            back_colour = style.find("BackColour").text if style.find("BackColour") is not None else "#FFFFFFFF"
+            font_colour = style.find("FontColour").text if style.find("FontColour") is not None else "#000000FF"
+            style_mapping[key] = {
+                "backgroundColor": back_colour[:7],
+                "textColor": font_colour[:7]
+            }
+    return style_mapping
+
+def parse_buttons(grid_root, style_mapping):
+    """
+    Extract buttons and their metadata from the Grid XML file.
+    """
+    buttons = []
+    images = []
+    button_counter = 1
+
+    for cell in grid_root.findall(".//Cell"):
+        style_key = cell.find("StyleKey")
+        style = style_mapping.get(style_key.text, {}) if style_key is not None else {}
+
+        label = ""
+        caption = cell.find("Caption")
         if caption is not None:
             label = caption.text
-        else:
-            wordlist = button.find('WordList')
-            if wordlist is not None:
-                label = wordlist.find('.//Item').find('Name').text  # Use the first word list item as label
 
-        openboard_button = {
-            'id': button.attrib.get('Id'),
-            'label': label,
-            'row': int(button.find('GridRow').text),
-            'col': int(button.find('GridColumn').text),
-            'width': int(button.find('GridWidth').text),
-            'height': int(button.find('GridHeight').text),
-            'style': style
-        }
-        openboard_json['buttons'].append(openboard_button)
+        # Extract images
+        image_tag = cell.find(".//Image")
+        if image_tag is not None:
+            image_path = image_tag.text.strip()
+            image_id = f"image-{button_counter}"
+            images.append({"id": image_id, "path": image_path})
+
+        # Extract navigation
+        navigation = None
+        navigation_command = cell.find(".//Command[@ID='Jump.To']")
+        if navigation_command is not None:
+            target_grid = navigation_command.find(".//Parameter[@Key='grid']")
+            if target_grid is not None:
+                navigation = {"jump_to": target_grid.text}
+
+        buttons.append({
+            "id": f"button-{button_counter}",
+            "label": label,
+            "row": int(cell.attrib.get("GridRow", 0)),
+            "col": int(cell.attrib.get("GridColumn", 0)),
+            "width": int(cell.attrib.get("GridWidth", 1)),
+            "height": int(cell.attrib.get("GridHeight", 1)),
+            "style": style,
+            "navigation": navigation
+        })
+        button_counter += 1
+
+    return buttons, images
+
+def grid_to_openboard(grid_xml_path, styles_xml_path=None, output_json_path="output.obf", locale="en"):
+    """
+    Convert a Grid 3 board to OpenBoard format.
+    """
+    # Parse grid and styles
+    grid_tree = ET.parse(grid_xml_path)
+    grid_root = grid_tree.getroot()
+    style_mapping = parse_styles(styles_xml_path)
     
-    # Save OpenBoard JSON file
-    with open(output_json_path, 'w') as f:
-        json.dump(openboard_json, f, indent=4)
+    # Extract grid dimensions
+    rows = len(grid_root.find(".//RowDefinitions").findall("RowDefinition"))
+    columns = len(grid_root.find(".//ColumnDefinitions").findall("ColumnDefinition"))
+    
+    # Extract buttons and images
+    buttons, images = parse_buttons(grid_root, style_mapping)
+    
+    # Initialize OBF structure
+    obf_data = {
+        "format": "open-board-0.1",
+        "id": "board",
+        "locale": locale,
+        "name": "Converted Grid",
+        "description_html": "Converted from Grid XML format.",
+        "buttons": buttons,
+        "grid": {
+            "rows": rows,
+            "columns": columns,
+            "order": []
+        },
+        "images": images,
+    }
+    
+    # Populate grid order with button IDs
+    button_positions = {f"{b['row']}-{b['col']}": b["id"] for b in buttons}
+    for row in range(rows):
+        row_order = []
+        for col in range(columns):
+            button_id = button_positions.get(f"{row}-{col}", None)
+            row_order.append(button_id)
+        obf_data["grid"]["order"].append(row_order)
+    
+    # Save OBF JSON file
+    with open(output_json_path, "w", encoding="utf-8") as f:
+        json.dump(obf_data, f, indent=4)
+    return output_json_path
 
-# Example usage
-grid_to_openboard('/path/to/grid.xml', '/path/to/styles.xml', '/path/to/output.json')
+def extract_gridset(gridset_path, extract_to):
+    """
+    Extract a Gridset ZIP file to a temporary directory.
+    """
+    with zipfile.ZipFile(gridset_path, "r") as zip_ref:
+        zip_ref.extractall(extract_to)
+    return extract_to
 
+def main():
+    parser = argparse.ArgumentParser(description="Convert Grid 3 files to Open Board Format (OBF).")
+    parser.add_argument("gridset_path", help="Path to the Gridset (ZIP) file.")
+    parser.add_argument("--styles", help="Path to the styles XML file.", default=None)
+    parser.add_argument("--output", help="Path to save the converted OpenBoard JSON file.", default="output.obf")
+    parser.add_argument("--locale", help="Language locale for the OpenBoard file.", default="en")
+    args = parser.parse_args()
 
+    # Create a temporary directory to extract the Gridset
+    with tempfile.TemporaryDirectory() as temp_dir:
+        extract_gridset(args.gridset_path, temp_dir)
+        
+        # Find the main grid XML file
+        grid_xml_path = os.path.join(temp_dir, "Grids", "grid.xml")  # Adjust as needed
+        if not os.path.exists(grid_xml_path):
+            print("Error: Could not find grid.xml in the Gridset.")
+            return
+        
+        # Convert to OpenBoard format
+        output_path = grid_to_openboard(
+            grid_xml_path=grid_xml_path,
+            styles_xml_path=args.styles,
+            output_json_path=args.output,
+            locale=args.locale
+        )
+        print(f"OpenBoard file saved to {output_path}")
+
+if __name__ == "__main__":
+    main()

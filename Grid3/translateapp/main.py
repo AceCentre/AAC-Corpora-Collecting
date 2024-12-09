@@ -20,14 +20,20 @@ def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None
         tree = ET.parse(file)
         root = tree.getroot()
 
-        # Collect all translatable texts
+        # Collect translatable texts
         translatable_texts = []
         elements_to_translate = []
 
         for element in root.iter():
+            # Skip known non-translatable elements
+            if element.tag in ["Style", "Image", "Command", "ContentType", "ContentSubType"]:
+                continue
+
             if element.text and element.text.strip():
-                translatable_texts.append(element.text)
-                elements_to_translate.append(element)
+                # Only translate if it looks like user-facing text (e.g., captions, labels)
+                if element.tag in ["Caption", "Text"]:
+                    translatable_texts.append(element.text)
+                    elements_to_translate.append(element)
 
         # Perform batch translation with caching
         translated_texts = []
@@ -122,12 +128,9 @@ st.title("Gridset Translator")
 st.markdown(
     """
     Welcome to the **Gridset Translator**, a tool designed to translate Gridset files for 
-    [Grid 3 software](http://thinksmartbox.com/grid3). This will run a lot faster if you use a paid for translation tool - You'll just need to enter your key below if you use that. **Note: Please dont rely on this! This may be useful to get you started and will definitely be useful for phrases but for core word vocabulary systems be very wary of it!o!** 
-
-    ### Related Tools
-    - [AAC Keyboard Maker](https://aackeyboardmaker.streamlit.app/): Create custom keyboards for Grid 3 in various languages.
-    - [TTS Voices Available](https://ttsvoicesavailable.streamlit.app/): Check if Text-to-Speech (TTS) is supported in your desired language.
-    - [AAC Speak Helper](https://docs.acecentre.org.uk/products/aac-speak-helper-tool): A tool to work with Windows AAC Softwre to provide additional languages for TTS and translation
+    [Grid 3 software](http://thinksmartbox.com/grid3). This will run a lot faster if you use a paid for translation tool - You'll just need to enter your key below if you use that.
+    
+    **Note: Please dont rely on this! This may be useful to get you started and will definitely be useful for phrases but for core word vocabulary systems be very wary of it!** 
 
     Upload your `.gridset` file, select your translation settings, and download the updated file with ease!
     """
@@ -147,7 +150,7 @@ if translation_tool in ["Microsoft", "DeepL"]:
         api_key = st.text_input("Enter your Microsoft Translator API Key", type="password")
         region = st.text_input("Enter your Microsoft Translator Region", value="uksouth")
     else:
-        api_key = None
+        api_key = st.text_input("Enter your DeepL Translator API Key", type="password")
         region = None
 else:
     api_key = None
@@ -279,6 +282,12 @@ if uploaded_file:
 st.markdown("---")  # Adds a horizontal line as a separator
 st.markdown(
     """
+    #### Related Tools
+    - [AAC Keyboard Maker](https://aackeyboardmaker.streamlit.app/): Create custom keyboards for Grid 3 in various languages.
+    - [TTS Voices Available](https://ttsvoicesavailable.streamlit.app/): Check if Text-to-Speech (TTS) is supported in your desired language.
+    - [AAC Speak Helper](https://docs.acecentre.org.uk/products/aac-speak-helper-tool): A tool to work with Windows AAC Softwre to provide additional languages for TTS and translation
+
+
     Made by
     """
 )
