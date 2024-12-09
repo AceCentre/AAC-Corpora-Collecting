@@ -5,66 +5,72 @@ import zipfile
 import os
 from io import BytesIO
 import tempfile
+import shutil
+import time
+import datetime
+
 translation_cache = {}
 
-def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None, debug_mode=False):
+
+if "translation_cache" not in st.session_state:
+    st.session_state["translation_cache"] = {}
+
+def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None, region=None, tweak_xml=False, debug_mode=False, rate_limit_enabled=True):
     try:
         tree = ET.parse(file)
         root = tree.getroot()
-
-        # Cache for translated strings
-        translation_cache = {}
 
         # Collect all translatable texts
         translatable_texts = []
         elements_to_translate = []
 
         for element in root.iter():
-            if element.tag == "Parameter" and element.get("Key") == "grid":
-                continue
-            if element.tag in ["r", "Caption", "Parameter"] and element.text and element.text.strip():
+            if element.text and element.text.strip():
                 translatable_texts.append(element.text)
                 elements_to_translate.append(element)
 
         # Perform batch translation with caching
         translated_texts = []
         for text in translatable_texts:
-            if text in translation_cache:
+            if text in st.session_state["translation_cache"]:
                 # Use cached translation
-                translated_texts.append(translation_cache[text])
+                translated_texts.append(st.session_state["translation_cache"][text])
                 if debug_mode:
-                    st.write(f"Cache hit: '{text}' -> '{translation_cache[text]}'")
+                    st.write(f"Cache hit: '{text}' -> '{st.session_state['translation_cache'][text]}'")
             else:
-                # Mark for translation
+                # Add to list for API translation
                 translated_texts.append(None)
 
         # Translate only uncached texts
         texts_to_translate = [text for text, translated in zip(translatable_texts, translated_texts) if translated is None]
         if texts_to_translate:
-            try:
-                new_translations = translate_text(texts_to_translate, tool, source_lang, target_lang, api_key, region=region)
-                for text, translated in zip(texts_to_translate, new_translations):
-                    translation_cache[text] = translated
-                    translated_texts[translatable_texts.index(text)] = translated
-                    if debug_mode:
-                        st.write(f"Translated: '{text}' -> '{translated}'")
-            except Exception as e:
-                st.error(f"Error during batch translation: {e}")
-                return None
+            new_translations = translate_text(texts_to_translate, tool, source_lang, target_lang, api_key, region, rate_limit_enabled)
+            for text, translation in zip(texts_to_translate, new_translations):
+                st.session_state["translation_cache"][text] = translation  # Cache the new translation
+                # Update the respective entry in the translated_texts list
+                translated_texts[translatable_texts.index(text)] = translation
+                if debug_mode:
+                    st.write(f"Translated: '{text}' -> '{translation}'")
 
-        # Update XML elements with translated text
-        for element, translated_text in zip(elements_to_translate, translated_texts):
-            element.text = translated_text
+        # Update XML with translated text
+        for element, translated in zip(elements_to_translate, translated_texts):
+            if tweak_xml:
+                element.text = wrap_in_cdata(translated.strip())
+            else:
+                element.text = translated
 
-        # Save the modified XML
+        # Save modified XML
         translated_xml = BytesIO()
         tree.write(translated_xml, encoding="utf-8", xml_declaration=True)
-        translated_xml.seek(0)
         return translated_xml
     except Exception as e:
         st.error(f"Error processing XML: {e}")
         return None
     
+# For some languages we may need to do this
+def wrap_in_cdata(text):
+    return f"<![CDATA[{text}]]>"
+
 
 # Function to get supported languages
 def get_supported_languages(tool, api_key=None):
@@ -84,48 +90,53 @@ def get_supported_languages(tool, api_key=None):
         return []
 
 # Function to translate text
-def translate_text(text_list, tool, source_lang, target_lang, api_key=None, region=None):
+def translate_text(text_list, tool, source_lang, target_lang, api_key=None, region=None, rate_limit_enabled=False):
     try:
         if tool == "Google":
-            # Use batch translation for Google
-            if isinstance(text_list, list):
-                return GoogleTranslator(source=source_lang, target=target_lang).translate_batch(text_list)
+            if rate_limit_enabled:
+                batch_size = 5  # Google allows 5 requests per second
+                translated_texts = []
+                for i in range(0, len(text_list), batch_size):
+                    batch = text_list[i:i + batch_size]
+                    translated_texts.extend(GoogleTranslator(source=source_lang, target=target_lang).translate_batch(batch))
+                    time.sleep(1)  # Pause for 1 second after processing each batch
+                return translated_texts
             else:
-                return GoogleTranslator(source=source_lang, target=target_lang).translate(text_list)
+                return GoogleTranslator(source=source_lang, target=target_lang).translate_batch(text_list)
         elif tool == "Microsoft":
             if api_key and region:
-                translator = MicrosoftTranslator(
-                    api_key=api_key, 
-                    source=source_lang, 
-                    target=target_lang, 
-                    region=region
-                )
-                if isinstance(text_list, list):
-                    return translator.translate_batch(text_list)
-                else:
-                    return translator.translate(text_list)
+                translator = MicrosoftTranslator(api_key=api_key, source=source_lang, target=target_lang, region=region)
+                return translator.translate_batch(text_list)
             else:
-                raise ValueError("Microsoft Translator requires both an API key and region.")
+                raise ValueError("Microsoft Translator requires both api_key and region.")
         elif tool == "DeepL":
             if api_key:
                 translator = DeeplTranslator(api_key=api_key, source=source_lang, target=target_lang)
-                if isinstance(text_list, list):
-                    return translator.translate_batch(text_list)
-                else:
-                    return translator.translate(text_list)
+                return translator.translate_batch(text_list)
     except Exception as e:
         st.error(f"Translation error: {e}")
         return text_list
     
 # Streamlit app
 st.title("Gridset Translator")
+
 st.markdown(
     """
-    Upload a `.gridset` file, translate its text elements to another language, 
-    and download the translated `.gridset` file.
+    Welcome to the **Gridset Translator**, a tool designed to enhance accessibility for users of the 
+    [Grid 3 software](http://thinksmartbox.com/grid3). This application allows you to translate `.gridset` 
+    files into different languages efficiently.
+
+    ### Related Tools
+    - [AAC Keyboard Maker](https://aackeyboardmaker.streamlit.app/): Create custom keyboards for Grid 3 in various languages.
+    - [TTS Voices Available](https://ttsvoicesavailable.streamlit.app/): Check if Text-to-Speech (TTS) is supported in your desired language.
+
+    Upload your `.gridset` file, select your translation settings, and download the updated file with ease!
     """
 )
 
+
+#rate_limit = st.checkbox("Enable Rate Limiting for Google Translator (Avoid API Errors)", value=True)
+rate_limit = True
 # Select translation tool
 translation_tool = st.selectbox("Select Translation Tool", ["Google", "Microsoft", "DeepL"])
 region = None
@@ -133,9 +144,12 @@ region = None
 # API Key input for paid tools
 if translation_tool in ["Microsoft", "DeepL"]:
     st.markdown("**Note:** The API key will not be cached or stored.")
-    api_key = st.text_input(f"Enter your {translation_tool} API Key", type="password")
     if translation_tool == "Microsoft":
-        region = st.text_input("Enter the Azure Region for Microsoft Translator (e.g., 'uksouth')", value="uksouth")
+        api_key = st.text_input("Enter your Microsoft Translator API Key", type="password")
+        region = st.text_input("Enter your Microsoft Translator Region", value="uksouth")
+    else:
+        api_key = None
+        region = None
 else:
     api_key = None
 
@@ -150,84 +164,114 @@ else:
 
 # File upload
 uploaded_file = st.file_uploader("Upload a Gridset file (.gridset)", type=["gridset"])
+tweak_xml = st.checkbox("Tweak final Gridset for Better Language support (only use if it failed first time!)", value=False)
 debug_mode = st.checkbox("Enable Debug Output", value=False)
 
 if uploaded_file:
-    # Debug the uploaded file
-    st.write(f"Uploaded file: {uploaded_file.name}")
+    # Manage temporary directory and cache
+    if "last_uploaded_file" not in st.session_state or st.session_state["last_uploaded_file"] != uploaded_file.name:
+        # Remove previous temp directory if a new file is uploaded
+        if "temp_dir" in st.session_state and st.session_state["temp_dir"]:
+            shutil.rmtree(st.session_state["temp_dir"].name, ignore_errors=True)
+        # Create a new temp directory and reset cache
+        st.session_state["temp_dir"] = tempfile.TemporaryDirectory()
+        st.session_state["translation_cache"] = {}
+        st.session_state["last_uploaded_file"] = uploaded_file.name
 
-    # Use tempfile for a temporary directory
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # Unzip the uploaded .gridset file
-        try:
-            with zipfile.ZipFile(uploaded_file, "r") as zip_ref:
-                zip_ref.extractall(temp_dir)
-                st.write("Files successfully extracted.")
-        except Exception as e:
-            st.error(f"Error extracting .gridset file: {e}")
-            st.stop()
+    temp_dir = st.session_state["temp_dir"].name
 
-        # Debug the extracted files
-        extracted_files = list(os.walk(temp_dir))
-        if debug_mode:
-            st.write(f"Extracted files: {extracted_files}")
+    # Extract uploaded file to temp_dir
+    try:
+        with zipfile.ZipFile(uploaded_file, "r") as zip_ref:
+            zip_ref.extractall(temp_dir)
+        st.write("Files successfully extracted.")
+    except Exception as e:
+        st.error(f"Error extracting .gridset file: {e}")
+        st.stop()
 
-        # Initialize progress bar
-        total_files = sum(
-            1 for root_dir, _, files in os.walk(temp_dir) for file_name in files if file_name.endswith(".xml")
-        )
-        progress_bar = st.progress(0)
-        current_progress = 0
+    # Count total XML files for progress bar
+    total_files = sum(1 for _, _, files in os.walk(temp_dir) for f in files if f.endswith(".xml"))
+    if total_files == 0:
+        st.error("No XML files found in the uploaded gridset.")
+        st.stop()
 
-        # Process and translate XML files
-        output_zip = BytesIO()
-        with zipfile.ZipFile(output_zip, "w") as output_zip_ref:
-            for root_dir, _, files in os.walk(temp_dir):
-                for file_name in files:
-                    file_path = os.path.join(root_dir, file_name)
+    # Initialize progress bar
+    progress_bar = st.progress(0)
+    progress_text = st.empty()  # Placeholder for progress text
+    current_progress = 0
 
-                    # Debug file paths being processed
-                    relative_path = os.path.relpath(file_path, temp_dir)
-                    if debug_mode:
-                        st.write(f"Processing file: {relative_path}")
+    # Record start time
+    start_time = time.time()
+    
 
-                    if relative_path.startswith("Grids/") and file_name.endswith(".xml"):
-                        try:
-                            if debug_mode:
-                                st.write(f"Translating: {file_name}")
-                            translated_xml = process_and_translate_xml(
-                                file_path, translation_tool, source_lang, target_lang, api_key, debug_mode=debug_mode
-                            )
-                            if translated_xml:
-                                if debug_mode:
-                                    st.write(f"Successfully translated: {file_name}")
-                                output_zip_ref.writestr(relative_path, translated_xml.read())
-                            else:
-                                st.error(f"Failed to translate: {file_name}")
-                        except Exception as e:
-                            st.error(f"Error translating file {file_name}: {e}")
-                    else:
-                        # Debug skipped files
+    # Create ZIP file for translated content
+    output_zip = BytesIO()
+    with zipfile.ZipFile(output_zip, "w") as output_zip_ref:
+        for root, _, files in os.walk(temp_dir):
+            for file_name in files:
+                file_path = os.path.join(root, file_name)
+                relative_path = os.path.relpath(file_path, temp_dir)
+
+                # Process only XML files in the "Grids/" directory
+                if relative_path.startswith("Grids/") and file_name.endswith(".xml"):
+                    try:
                         if debug_mode:
-                            st.write(f"Skipping file: {file_name}")
-                        with open(file_path, "rb") as f:
-                            output_zip_ref.writestr(relative_path, f.read())
+                            st.write(f"Translating: {file_name}")
+                        translated_xml = process_and_translate_xml(
+                            file_path,
+                            translation_tool,
+                            source_lang,
+                            target_lang,
+                            api_key,
+                            region,
+                            tweak_xml=tweak_xml,
+                            debug_mode=debug_mode,
+                            rate_limit_enabled=rate_limit
+                        )
+                        if translated_xml:
+                            output_zip_ref.writestr(relative_path, translated_xml.read())
+                        else:
+                            st.error(f"Failed to translate: {file_name}")
+                    except Exception as e:
+                        st.error(f"Error translating file {file_name}: {e}")
+                else:
+                    # Copy non-XML files directly
+                    with open(file_path, "rb") as f:
+                        output_zip_ref.writestr(relative_path, f.read())
 
-                    # Update progress bar
-                    current_progress += 1
-                    progress_bar.progress(int((current_progress / total_files) * 100))
+                # Update progress bar
+                current_progress += 1
+                progress_bar.progress(int((current_progress / total_files) * 100))
 
-        # Check if any files were written to the ZIP
-        if output_zip.tell() == 0:
-            st.error("No files were written to the output ZIP. Check your input.")
-        else:
-            # Provide download link for the translated .gridset
-            st.success("Translation complete!")
-            output_zip.seek(0)
-            translated_filename = f"{os.path.splitext(uploaded_file.name)[0]}-{target_lang}.gridset"
-            st.download_button(
-                label="Download Translated Gridset",
-                data=output_zip,
-                file_name=translated_filename,
-                mime="application/zip",
-            )
+                # Calculate elapsed time and ETA
+                elapsed_time = time.time() - start_time
+                avg_time_per_file = elapsed_time / current_progress if current_progress > 0 else 0
+                remaining_files = total_files - current_progress
+                estimated_time_remaining = remaining_files * avg_time_per_file
+                eta = datetime.timedelta(seconds=int(estimated_time_remaining))
+
+                # Update progress text
+                progress_text.text(
+                    f"Processed {current_progress}/{total_files} files. "
+                    f"Elapsed: {datetime.timedelta(seconds=int(elapsed_time))}, "
+                    f"ETA: {eta}."
+                )
+
+    # Provide the translated gridset for download
+    if output_zip.tell() > 0:
+        st.success("Translation complete!")
+        output_zip.seek(0)
+        translated_filename = f"{os.path.splitext(uploaded_file.name)[0]}-{target_lang}.gridset"
+        st.download_button(
+            label="Download Translated Gridset",
+            data=output_zip,
+            file_name=translated_filename,
+            mime="application/zip",
+        )
+    else:
+        st.error("No files were written to the output ZIP. Check your input.")
+
+    # Clean up temporary files after processing
+    if "temp_dir" in st.session_state and st.session_state["temp_dir"]:
+        st.session_state["temp_dir"].cleanup()
+        st.session_state.pop("temp_dir", None)
