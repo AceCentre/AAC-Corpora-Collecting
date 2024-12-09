@@ -42,7 +42,7 @@ def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None
         texts_to_translate = [text for text, translated in zip(translatable_texts, translated_texts) if translated is None]
         if texts_to_translate:
             try:
-                new_translations = translate_text(texts_to_translate, tool, source_lang, target_lang, api_key)
+                new_translations = translate_text(texts_to_translate, tool, source_lang, target_lang, api_key, region=region)
                 for text, translated in zip(texts_to_translate, new_translations):
                     translation_cache[text] = translated
                     translated_texts[translatable_texts.index(text)] = translated
@@ -84,7 +84,7 @@ def get_supported_languages(tool, api_key=None):
         return []
 
 # Function to translate text
-def translate_text(text_list, tool, source_lang, target_lang, api_key=None):
+def translate_text(text_list, tool, source_lang, target_lang, api_key=None, region=None):
     try:
         if tool == "Google":
             # Use batch translation for Google
@@ -93,12 +93,19 @@ def translate_text(text_list, tool, source_lang, target_lang, api_key=None):
             else:
                 return GoogleTranslator(source=source_lang, target=target_lang).translate(text_list)
         elif tool == "Microsoft":
-            if api_key:
-                translator = MicrosoftTranslator(api_key=api_key, source=source_lang, target=target_lang)
+            if api_key and region:
+                translator = MicrosoftTranslator(
+                    api_key=api_key, 
+                    source=source_lang, 
+                    target=target_lang, 
+                    region=region
+                )
                 if isinstance(text_list, list):
                     return translator.translate_batch(text_list)
                 else:
                     return translator.translate(text_list)
+            else:
+                raise ValueError("Microsoft Translator requires both an API key and region.")
         elif tool == "DeepL":
             if api_key:
                 translator = DeeplTranslator(api_key=api_key, source=source_lang, target=target_lang)
@@ -121,11 +128,14 @@ st.markdown(
 
 # Select translation tool
 translation_tool = st.selectbox("Select Translation Tool", ["Google", "Microsoft", "DeepL"])
+region = None
 
 # API Key input for paid tools
 if translation_tool in ["Microsoft", "DeepL"]:
     st.markdown("**Note:** The API key will not be cached or stored.")
     api_key = st.text_input(f"Enter your {translation_tool} API Key", type="password")
+    if translation_tool == "Microsoft":
+        region = st.text_input("Enter the Azure Region for Microsoft Translator (e.g., 'uksouth')", value="uksouth")
 else:
     api_key = None
 
