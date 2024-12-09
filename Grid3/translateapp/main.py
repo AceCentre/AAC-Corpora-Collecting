@@ -5,36 +5,56 @@ import zipfile
 import os
 from io import BytesIO
 import tempfile
+translation_cache = {}
 
 def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None, debug_mode=False):
     try:
         tree = ET.parse(file)
         root = tree.getroot()
 
-        # Log the filename for debugging
-        if debug_mode:
-            st.write(f"Processing file: {file}")
+        # Cache for translated strings
+        translation_cache = {}
 
-        # Find and translate relevant elements
-        translated_count = 0
+        # Collect all translatable texts
+        translatable_texts = []
+        elements_to_translate = []
+
         for element in root.iter():
-            if element.tag == "Parameter":
-                # Skip translation for Parameter with Key="grid"
-                if element.get("Key") == "grid":
-                    continue
-            if element.tag in ["r", "Caption", "Parameter"]:
-                if element.text and element.text.strip():
-                    # Debug before translation
-                    original_text = element.text
-                    translated_text = translate_text(original_text, tool, source_lang, target_lang, api_key)
-                    element.text = translated_text
-                    translated_count += 1
-                    # Debug after translation
-                    if debug_mode:
-                        st.write(f"Translated '{original_text}' to '{translated_text}'")
+            if element.tag == "Parameter" and element.get("Key") == "grid":
+                continue
+            if element.tag in ["r", "Caption", "Parameter"] and element.text and element.text.strip():
+                translatable_texts.append(element.text)
+                elements_to_translate.append(element)
 
-        # Debug the number of elements translated
-        st.write(f"Total elements translated in file: {translated_count}")
+        # Perform batch translation with caching
+        translated_texts = []
+        for text in translatable_texts:
+            if text in translation_cache:
+                # Use cached translation
+                translated_texts.append(translation_cache[text])
+                if debug_mode:
+                    st.write(f"Cache hit: '{text}' -> '{translation_cache[text]}'")
+            else:
+                # Mark for translation
+                translated_texts.append(None)
+
+        # Translate only uncached texts
+        texts_to_translate = [text for text, translated in zip(translatable_texts, translated_texts) if translated is None]
+        if texts_to_translate:
+            try:
+                new_translations = translate_text(texts_to_translate, tool, source_lang, target_lang, api_key)
+                for text, translated in zip(texts_to_translate, new_translations):
+                    translation_cache[text] = translated
+                    translated_texts[translatable_texts.index(text)] = translated
+                    if debug_mode:
+                        st.write(f"Translated: '{text}' -> '{translated}'")
+            except Exception as e:
+                st.error(f"Error during batch translation: {e}")
+                return None
+
+        # Update XML elements with translated text
+        for element, translated_text in zip(elements_to_translate, translated_texts):
+            element.text = translated_text
 
         # Save the modified XML
         translated_xml = BytesIO()
@@ -44,6 +64,7 @@ def process_and_translate_xml(file, tool, source_lang, target_lang, api_key=None
     except Exception as e:
         st.error(f"Error processing XML: {e}")
         return None
+    
 
 # Function to get supported languages
 def get_supported_languages(tool, api_key=None):
@@ -63,22 +84,32 @@ def get_supported_languages(tool, api_key=None):
         return []
 
 # Function to translate text
-def translate_text(text, tool, source_lang, target_lang, api_key=None):
+def translate_text(text_list, tool, source_lang, target_lang, api_key=None):
     try:
         if tool == "Google":
-            return GoogleTranslator(source=source_lang, target=target_lang).translate(text)
+            # Use batch translation for Google
+            if isinstance(text_list, list):
+                return GoogleTranslator(source=source_lang, target=target_lang).translate_batch(text_list)
+            else:
+                return GoogleTranslator(source=source_lang, target=target_lang).translate(text_list)
         elif tool == "Microsoft":
             if api_key:
                 translator = MicrosoftTranslator(api_key=api_key, source=source_lang, target=target_lang)
-                return translator.translate(text)
+                if isinstance(text_list, list):
+                    return translator.translate_batch(text_list)
+                else:
+                    return translator.translate(text_list)
         elif tool == "DeepL":
             if api_key:
                 translator = DeeplTranslator(api_key=api_key, source=source_lang, target=target_lang)
-                return translator.translate(text)
+                if isinstance(text_list, list):
+                    return translator.translate_batch(text_list)
+                else:
+                    return translator.translate(text_list)
     except Exception as e:
         st.error(f"Translation error: {e}")
-        return text
-
+        return text_list
+    
 # Streamlit app
 st.title("Gridset Translator")
 st.markdown(
@@ -131,6 +162,13 @@ if uploaded_file:
         if debug_mode:
             st.write(f"Extracted files: {extracted_files}")
 
+        # Initialize progress bar
+        total_files = sum(
+            1 for root_dir, _, files in os.walk(temp_dir) for file_name in files if file_name.endswith(".xml")
+        )
+        progress_bar = st.progress(0)
+        current_progress = 0
+
         # Process and translate XML files
         output_zip = BytesIO()
         with zipfile.ZipFile(output_zip, "w") as output_zip_ref:
@@ -148,7 +186,7 @@ if uploaded_file:
                             if debug_mode:
                                 st.write(f"Translating: {file_name}")
                             translated_xml = process_and_translate_xml(
-                                file_path, translation_tool, source_lang, target_lang, api_key,  debug_mode=debug_mode
+                                file_path, translation_tool, source_lang, target_lang, api_key, debug_mode=debug_mode
                             )
                             if translated_xml:
                                 if debug_mode:
@@ -164,6 +202,10 @@ if uploaded_file:
                             st.write(f"Skipping file: {file_name}")
                         with open(file_path, "rb") as f:
                             output_zip_ref.writestr(relative_path, f.read())
+
+                    # Update progress bar
+                    current_progress += 1
+                    progress_bar.progress(int((current_progress / total_files) * 100))
 
         # Check if any files were written to the ZIP
         if output_zip.tell() == 0:
