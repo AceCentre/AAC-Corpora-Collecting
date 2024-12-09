@@ -122,9 +122,8 @@ st.title("Gridset Translator")
 
 st.markdown(
     """
-    Welcome to the **Gridset Translator**, a tool designed to enhance accessibility for users of the 
-    [Grid 3 software](http://thinksmartbox.com/grid3). This application allows you to translate `.gridset` 
-    files into different languages efficiently.
+    Welcome to the **Gridset Translator**, a tool designed to translate Gridset files for 
+    [Grid 3 software](http://thinksmartbox.com/grid3). **Note: Please dont rely on this! This may be useful to get you started and will definitely be useful for phrases but core word systems be very wary of it!!** 
 
     ### Related Tools
     - [AAC Keyboard Maker](https://aackeyboardmaker.streamlit.app/): Create custom keyboards for Grid 3 in various languages.
