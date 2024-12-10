@@ -9,10 +9,19 @@ import shutil
 import time
 import datetime
 
+MAX_CACHE_SIZE = 1000
+
 translation_cache = {}
 
 if "translation_cache" not in st.session_state:
     st.session_state["translation_cache"] = {}
+
+def manage_cache():
+    """Keep cache size under control"""
+    if len(st.session_state["translation_cache"]) > MAX_CACHE_SIZE:
+        # Remove oldest entries to keep size in check
+        items = list(st.session_state["translation_cache"].items())
+        st.session_state["translation_cache"] = dict(items[-MAX_CACHE_SIZE:])
 
 def create_cdata(text):
     return ET.CDATA(text)
@@ -250,21 +259,34 @@ def process_and_translate_xml(
         # Perform batch translation with caching
         add_message("Translating collected texts...")
         translated_texts = []
-        for text in translatable_texts:
+        texts_to_translate = []
+        cache_indices = []  # Keep track of which indices were from cache
+
+        # First pass: check cache
+        for i, text in enumerate(translatable_texts):
             if text in st.session_state["translation_cache"]:
                 translated_texts.append(st.session_state["translation_cache"][text])
                 add_message(f"Cache hit: '{text}' -> '{st.session_state['translation_cache'][text]}'")
+                cache_indices.append(i)
             else:
                 translated_texts.append(None)
+                texts_to_translate.append(text)
 
-        # Translate only uncached texts
-        texts_to_translate = [text for text, translated in zip(translatable_texts, translated_texts) if translated is None]
+        # Translate uncached texts
         if texts_to_translate:
             new_translations = translate_text(texts_to_translate, tool, source_lang, target_lang, api_key, region, rate_limit_enabled)
-            for text, translation in zip(texts_to_translate, new_translations):
-                st.session_state["translation_cache"][text] = translation
-                translated_texts[translatable_texts.index(text)] = translation
-                add_message(f"Translated: '{text}' -> '{translation}'")
+            
+            # Update cache and translated_texts
+            translation_idx = 0
+            for i, translation in enumerate(translated_texts):
+                if i not in cache_indices:
+                    translated_texts[i] = new_translations[translation_idx]
+                    st.session_state["translation_cache"][translatable_texts[i]] = new_translations[translation_idx]
+                    add_message(f"Translated: '{translatable_texts[i]}' -> '{new_translations[translation_idx]}'")
+                    translation_idx += 1
+
+            # Manage cache size
+            manage_cache()
 
         # Update XML with translated text
         add_message("Updating XML with translated texts...")
@@ -311,6 +333,99 @@ def process_and_translate_xml(
         st.error(error_message)
         return None
 
+def translate_text(text_list, tool, source_lang, target_lang, api_key=None, region=None, rate_limit_enabled=False):
+    try:
+        if not text_list:  # Handle empty list case
+            return []
+
+        # Deduplicate texts before translation to reduce API calls
+        unique_texts = list(set(text for text in text_list if text))  # Filter out None/empty values
+        if not unique_texts:  # If no valid texts after filtering
+            return text_list
+            
+        text_map = {text: i for i, text in enumerate(text_list)}
+        
+        if tool == "Google":
+            translator = GoogleTranslator(source=source_lang, target=target_lang)
+            if rate_limit_enabled:
+                batch_size = 10
+                translated_texts = [''] * len(unique_texts)
+                
+                for i in range(0, len(unique_texts), batch_size):
+                    batch = unique_texts[i:i + batch_size]
+                    try:
+                        translations = translator.translate_batch(batch)
+                        # Ensure translations list matches batch size
+                        if translations and len(translations) == len(batch):
+                            for j, trans in enumerate(translations):
+                                translated_texts[i + j] = trans if trans else batch[j]
+                        else:
+                            # If translation failed, use original texts
+                            for j, original in enumerate(batch):
+                                translated_texts[i + j] = original
+                    except Exception as batch_error:
+                        st.error(f"Batch translation error: {batch_error}")
+                        # Use original texts for failed batch
+                        for j, original in enumerate(batch):
+                            translated_texts[i + j] = original
+                    
+                    if i + batch_size < len(unique_texts):
+                        time.sleep(0.5)
+                
+                # Create translation map with safety checks
+                translation_map = {}
+                for orig, trans in zip(unique_texts, translated_texts):
+                    translation_map[orig] = trans if trans else orig
+                
+                # Map back to original order with fallback
+                return [translation_map.get(text, text) for text in text_list]
+            else:
+                try:
+                    translations = translator.translate_batch(unique_texts)
+                    if translations and len(translations) == len(unique_texts):
+                        translation_map = dict(zip(unique_texts, translations))
+                    else:
+                        translation_map = dict(zip(unique_texts, unique_texts))
+                    return [translation_map.get(text, text) for text in text_list]
+                except Exception as e:
+                    st.error(f"Bulk translation error: {e}")
+                    return text_list
+                    
+        elif tool == "Microsoft":
+            if api_key and region:
+                try:
+                    translator = MicrosoftTranslator(api_key=api_key, source=source_lang, target=target_lang, region=region)
+                    translations = translator.translate_batch(unique_texts)
+                    if translations and len(translations) == len(unique_texts):
+                        translation_map = dict(zip(unique_texts, translations))
+                    else:
+                        translation_map = dict(zip(unique_texts, unique_texts))
+                    return [translation_map.get(text, text) for text in text_list]
+                except Exception as e:
+                    st.error(f"Microsoft translation error: {e}")
+                    return text_list
+            else:
+                raise ValueError("Microsoft Translator requires both api_key and region.")
+                
+        elif tool == "DeepL":
+            if api_key:
+                try:
+                    translator = DeeplTranslator(api_key=api_key, source=source_lang, target=target_lang)
+                    translations = translator.translate_batch(unique_texts)
+                    if translations and len(translations) == len(unique_texts):
+                        translation_map = dict(zip(unique_texts, translations))
+                    else:
+                        translation_map = dict(zip(unique_texts, unique_texts))
+                    return [translation_map.get(text, text) for text in text_list]
+                except Exception as e:
+                    st.error(f"DeepL translation error: {e}")
+                    return text_list
+            else:
+                raise ValueError("DeepL requires an api_key.")
+    except Exception as e:
+        st.error(f"Translation error: {e}")
+        return text_list  # Return original texts if translation fails
+
 # Function to get supported languages
 def get_supported_languages(tool, api_key=None, region=None):
     try:
@@ -328,34 +443,6 @@ def get_supported_languages(tool, api_key=None, region=None):
         st.error(f"Error fetching supported languages: {e}")
         return []
 
-# Function to translate text
-def translate_text(text_list, tool, source_lang, target_lang, api_key=None, region=None, rate_limit_enabled=False):
-    try:
-        if tool == "Google":
-            if rate_limit_enabled:
-                batch_size = 5  # Google allows 5 requests per second
-                translated_texts = []
-                for i in range(0, len(text_list), batch_size):
-                    batch = text_list[i:i + batch_size]
-                    translated_texts.extend(GoogleTranslator(source=source_lang, target=target_lang).translate_batch(batch))
-                    time.sleep(1)  # Pause for 1 second after processing each batch
-                return translated_texts
-            else:
-                return GoogleTranslator(source=source_lang, target=target_lang).translate_batch(text_list)
-        elif tool == "Microsoft":
-            if api_key and region:
-                translator = MicrosoftTranslator(api_key=api_key, source=source_lang, target=target_lang, region=region)
-                return translator.translate_batch(text_list)
-            else:
-                raise ValueError("Microsoft Translator requires both api_key and region.")
-        elif tool == "DeepL":
-            if api_key:
-                translator = DeeplTranslator(api_key=api_key, source=source_lang, target=target_lang)
-                return translator.translate_batch(text_list)
-    except Exception as e:
-        st.error(f"Translation error: {e}")
-        return text_list
-    
 # Streamlit app
 st.title("Gridset Translator")
 st.markdown(
