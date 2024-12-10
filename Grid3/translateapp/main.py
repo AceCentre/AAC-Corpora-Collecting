@@ -27,7 +27,7 @@ def extract_text_and_metadata_from_parameter(param_elem):
         for s_elem in p_elem.findall('s'):
             r_elem = s_elem.find('r')
             if r_elem is not None:
-                word = r_elem.text or ''
+                word = r_elem.text if r_elem.text is not None else ''
                 if word.strip():  # If it's an actual word
                     full_text.append(word)
                     # Store any attributes from the s element
@@ -41,6 +41,9 @@ def extract_text_and_metadata_from_parameter(param_elem):
 
 def rebuild_parameter_with_metadata(param_elem, translated_text, original_metadata):
     """Rebuild the parameter structure with translated text and preserve metadata"""
+    if translated_text is None:
+        translated_text = ''
+        
     # Clear existing content while preserving the Parameter attributes
     attribs = dict(param_elem.attrib)
     param_elem.clear()
@@ -55,6 +58,9 @@ def rebuild_parameter_with_metadata(param_elem, translated_text, original_metada
     
     meta_idx = 0
     for i, word in enumerate(words):
+        if word is None:
+            continue
+            
         # Create word element
         s_elem = ET.SubElement(p_elem, 's')
         
@@ -384,9 +390,10 @@ if st.session_state.translation_started and not st.session_state.translation_com
 
     try:
         # Extract the uploaded file into the temp directory
-        with zipfile.ZipFile(st.session_state.uploaded_file, "r") as zip_ref:
-            zip_ref.extractall(temp_dir)
-        st.write("Files successfully extracted.")
+        with st.spinner('Extracting files from gridset...'):
+            with zipfile.ZipFile(st.session_state.uploaded_file, "r") as zip_ref:
+                zip_ref.extractall(temp_dir)
+            st.success("Files successfully extracted!")
 
         # Count total XML files for progress bar
         total_files = sum(
@@ -408,63 +415,64 @@ if st.session_state.translation_started and not st.session_state.translation_com
 
         # Create ZIP file for translated content
         output_zip = BytesIO()
-        with zipfile.ZipFile(output_zip, "w") as output_zip_ref:
-            for root, _, files in os.walk(temp_dir):
-                for file_name in files:
-                    file_path = os.path.join(root, file_name)
-                    relative_path = os.path.relpath(file_path, temp_dir)
+        with zipfile.ZipFile(output_zip, "w", zipfile.ZIP_DEFLATED) as zip_out:
+            with st.spinner('Translating gridset contents...'):
+                for root, dirs, files in os.walk(temp_dir):
+                    for file_name in files:
+                        file_path = os.path.join(root, file_name)
+                        relative_path = os.path.relpath(file_path, temp_dir)
 
-                    # Process only XML files in the "Grids/" directory
-                    if (relative_path.startswith("Grids/") 
-                        and file_name.endswith(".xml")
-                        and file_path not in processed_files):
-                        
-                        processed_files.add(file_path)
-                        try:
-                            debug_messages.append(f"Translating file: {file_name}")
+                        # Process only XML files in the "Grids/" directory
+                        if (relative_path.startswith("Grids/") 
+                            and file_name.endswith(".xml")
+                            and file_path not in processed_files):
+                            
+                            processed_files.add(file_path)
+                            try:
+                                debug_messages.append(f"Translating file: {file_name}")
 
-                            translated_xml = process_and_translate_xml(
-                                file_path,
-                                translation_tool,
-                                source_lang,
-                                target_lang,
-                                api_key,
-                                region,
-                                tweak_xml=tweak_xml,
-                                debug_messages=debug_messages,
-                                debug_log=debug_log,
-                                rate_limit_enabled=rate_limit
+                                translated_xml = process_and_translate_xml(
+                                    file_path,
+                                    translation_tool,
+                                    source_lang,
+                                    target_lang,
+                                    api_key,
+                                    region,
+                                    tweak_xml=tweak_xml,
+                                    debug_messages=debug_messages,
+                                    debug_log=debug_log,
+                                    rate_limit_enabled=rate_limit
+                                )
+                                if translated_xml:
+                                    zip_out.writestr(relative_path, translated_xml.read())
+                                else:
+                                    st.error(f"Failed to translate: {file_name}")
+                            except Exception as e:
+                                st.error(f"Error translating file {file_name}: {e}")
+                        else:
+                            # Copy non-XML files directly
+                            with open(file_path, "rb") as f:
+                                zip_out.writestr(relative_path, f.read())
+
+                        # Update progress bar only for XML files we're meant to process
+                        if relative_path.startswith("Grids/") and file_name.endswith(".xml"):
+                            current_progress = len(processed_files)
+                            progress_percentage = int((current_progress / total_files) * 100)
+                            progress_bar.progress(min(progress_percentage, 100))
+
+                            # Calculate elapsed time and ETA
+                            elapsed_time = time.time() - start_time
+                            avg_time_per_file = elapsed_time / current_progress if current_progress > 0 else 0
+                            remaining_files = total_files - current_progress
+                            estimated_time_remaining = remaining_files * avg_time_per_file
+                            eta = datetime.timedelta(seconds=int(estimated_time_remaining))
+
+                            # Update progress text
+                            progress_text.text(
+                                f"Processed {current_progress}/{total_files} files. "
+                                f"Elapsed: {datetime.timedelta(seconds=int(elapsed_time))}, "
+                                f"ETA: {eta}."
                             )
-                            if translated_xml:
-                                output_zip_ref.writestr(relative_path, translated_xml.read())
-                            else:
-                                st.error(f"Failed to translate: {file_name}")
-                        except Exception as e:
-                            st.error(f"Error translating file {file_name}: {e}")
-                    else:
-                        # Copy non-XML files directly
-                        with open(file_path, "rb") as f:
-                            output_zip_ref.writestr(relative_path, f.read())
-
-                    # Update progress bar only for XML files we're meant to process
-                    if relative_path.startswith("Grids/") and file_name.endswith(".xml"):
-                        current_progress = len(processed_files)
-                        progress_percentage = int((current_progress / total_files) * 100)
-                        progress_bar.progress(min(progress_percentage, 100))
-
-                        # Calculate elapsed time and ETA
-                        elapsed_time = time.time() - start_time
-                        avg_time_per_file = elapsed_time / current_progress if current_progress > 0 else 0
-                        remaining_files = total_files - current_progress
-                        estimated_time_remaining = remaining_files * avg_time_per_file
-                        eta = datetime.timedelta(seconds=int(estimated_time_remaining))
-
-                        # Update progress text
-                        progress_text.text(
-                            f"Processed {current_progress}/{total_files} files. "
-                            f"Elapsed: {datetime.timedelta(seconds=int(elapsed_time))}, "
-                            f"ETA: {eta}."
-                        )
 
 
         # Provide the translated gridset for download
