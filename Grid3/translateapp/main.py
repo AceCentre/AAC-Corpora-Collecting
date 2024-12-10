@@ -742,6 +742,9 @@ st.markdown(
     #### Please Note
     This is not meant to replace the role of a translator, but it can be useful to "bulk" translate large sets of words and phrases to get you started. Be very careful of using this on core word systems in particular. Languages don't all translate the same way.
 
+    #### Privacy
+    This tool does not collect or store any of your data. It does not modify the original gridset in any way oher than translates strings it can find. It does not store locally or anywhere the data from the gridset. We don't track usage etc. **BUT BE AWARE OF THIS!**  If you use Google as a translation engine you are in effect passing all data from the gridset to Google Translate. Just like if you copy and pasted each cell. Tip: Remove any Personalised Data from your gridset first before uploading it (it wont translate anyway!) or use Microsoft and use your own key
+
     #### Related Tools
     - [AAC Keyboard Maker](https://aackeyboardmaker.streamlit.app/): Create custom keyboards for Grid 3 in various languages.
     - [TTS Voices Available](https://ttsvoicesavailable.streamlit.app/): Check if Text-to-Speech (TTS) is supported in your desired language.
