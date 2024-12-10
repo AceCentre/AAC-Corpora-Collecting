@@ -242,76 +242,138 @@ def translate_text(text_list, tool, source_lang, target_lang, api_key=None, regi
 st.title("Gridset Translator")
 st.markdown(
     """
-    Welcome to the **Gridset Translator**, a tool designed to translate Gridset files for 
-    [Grid 3 software](http://thinksmartbox.com/grid3). This will run a lot faster if you use a paid for translation tool - You'll just need to enter your key below if you use that.
-    
-    **Note: Please dont rely on this! This may be useful to get you started and will definitely be useful for phrases but for core word vocabulary systems be very wary of it!** 
-
-    Upload your `.gridset` file, select your translation settings, and download the updated file with ease!
+    This tool helps you translate [Grid3](https://thinksmartbox.com/grid3) gridsets from one language to another.
+    Upload a gridset file (.gridset), select your translation options, and click Start Translation.
     """
 )
 
+# Initialize session state variables if they don't exist
+if 'translation_started' not in st.session_state:
+    st.session_state.translation_started = False
+if 'translation_complete' not in st.session_state:
+    st.session_state.translation_complete = False
+if 'output_zip' not in st.session_state:
+    st.session_state.output_zip = None
+if 'translated_filename' not in st.session_state:
+    st.session_state.translated_filename = None
+if 'uploaded_file' not in st.session_state:
+    st.session_state.uploaded_file = None
 
-#rate_limit = st.checkbox("Enable Rate Limiting for Google Translator (Avoid API Errors)", value=True)
-rate_limit = True
-# Select translation tool
-translation_tool = st.selectbox("Select Translation Tool", ["Google", "Microsoft", "DeepL"])
-region = None
+# Start Again button at the top
+if st.session_state.translation_started:
+    if st.button("Start New Translation"):
+        st.session_state.clear()
+        st.rerun()
 
-# API Key input for paid tools
-if translation_tool in ["Microsoft", "DeepL"]:
-    st.markdown("**Note:** The API key will not be cached or stored.")
-    if translation_tool == "Microsoft":
-        api_key = st.text_input("Enter your Microsoft Translator API Key", type="password")
-        region = st.text_input("Enter your Microsoft Translator Region", value="uksouth")
-    else:
-        api_key = st.text_input("Enter your DeepL Translator API Key", type="password")
+# Only show options if translation hasn't started
+if not st.session_state.translation_started:
+    uploaded_file = st.file_uploader(
+        "Choose a gridset file",
+        type=["gridset"],
+        help="Upload a Grid3 gridset file (.gridset)",
+    )
+
+    if uploaded_file:
+        st.session_state.uploaded_file = uploaded_file
+        st.write("File uploaded successfully!")
+
+        # Translation options
+        translation_tool = st.selectbox(
+            "Select Translation Tool",
+            ["Google", "Microsoft", "DeepL"],
+            help="Choose the translation service to use",
+        )
+
+        # Get languages and ensure English is first
+        languages = get_supported_languages(translation_tool)
+        if "english" in languages:
+            languages.remove("english")
+            languages.insert(0, "english")
+        elif "en" in languages:
+            languages.remove("en")
+            languages.insert(0, "en")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            source_lang = st.selectbox(
+                "Source Language",
+                languages,
+                index=0  # English will always be first now
+            )
+        with col2:
+            target_lang = st.selectbox(
+                "Target Language",
+                languages,
+                index=1 if len(languages) > 1 else 0
+            )
+
+        # API configuration
+        api_key = None
         region = None
-else:
-    api_key = None
+        if translation_tool in ["Microsoft", "DeepL"]:
+            api_key = st.text_input(
+                f"{translation_tool} API Key",
+                type="password",
+                help=f"Enter your {translation_tool} API key",
+            )
+            if translation_tool == "Microsoft":
+                region = st.text_input(
+                    "Azure Region",
+                    help="Enter your Azure region (e.g., westeurope)",
+                )
 
-# Fetch supported languages dynamically
-languages = get_supported_languages(translation_tool, api_key)
+        # Advanced options in expander
+        with st.expander("Advanced Options"):
+            tweak_xml = st.checkbox(
+                "Use CDATA for text elements",
+                value=False,
+                help="Experimental: This maybe useful to fix issues in some languages where the text breaks the grid eg Urdu."
+            )
+            rate_limit = st.checkbox(
+                "Enable rate limiting",
+                value=True,
+                help="Slow down translation requests to avoid API limits",
+            )
+            show_debug = st.checkbox(
+                "Show debug output",
+                value=False,
+                help="Show detailed progress and debug information in a scrolling box"
+            )
 
-if languages:
-    source_lang = st.selectbox("Source Language", options=languages, index=languages.index("english"))
-    target_lang = st.selectbox("Target Language", options=languages, index=languages.index("spanish"))
-else:
-    st.error("Failed to fetch supported languages. Please check your API key or connection.")
+        # Start Translation button
+        if st.button("Start Translation"):
+            st.session_state.translation_started = True
+            st.session_state.show_debug = show_debug
+            st.session_state.translation_tool = translation_tool
+            st.session_state.source_lang = source_lang
+            st.session_state.target_lang = target_lang
+            st.session_state.api_key = api_key
+            st.session_state.region = region
+            st.session_state.tweak_xml = tweak_xml
+            st.session_state.rate_limit = rate_limit
+            st.rerun()
 
-def add_message_to_debug_area(message, debug_messages, debug_log):
-    """
-    Adds a message to the debug log and updates the Streamlit text area dynamically.
+# Process translation if started
+if st.session_state.translation_started and not st.session_state.translation_complete:
+    # Create debug log area
+    debug_log = st.empty() if st.session_state.get('show_debug', False) else None
+    debug_messages = []
 
-    Args:
-        message (str): The message to add to the debug log.
-        debug_messages (list): List of existing debug messages.
-        debug_log: Streamlit element placeholder for the debug text area.
-    """
-    debug_messages.append(message)
-    if debug_log:  # Ensure debug_log is initialized
-        debug_log.text_area("Debug Log", "\n".join(debug_messages), height=300)
+    # Get translation settings from session state
+    translation_tool = st.session_state.translation_tool
+    source_lang = st.session_state.source_lang
+    target_lang = st.session_state.target_lang
+    api_key = st.session_state.api_key
+    region = st.session_state.region
+    tweak_xml = st.session_state.tweak_xml
+    rate_limit = st.session_state.rate_limit
 
-# Main logic
-debug_messages = []
-
-# File upload
-uploaded_file = st.file_uploader("Upload a Gridset file (.gridset)", type=["gridset"])
-tweak_xml = st.checkbox("Tweak final Gridset for Better Language support (only use if it failed first time!)", value=False)
-debug_log = st.empty() if st.checkbox("Enable Debug Output", value=False) else None
-
-
-if uploaded_file:
     # Manage temporary directory and cache
-    if "last_uploaded_file" not in st.session_state or st.session_state["last_uploaded_file"] != uploaded_file.name:
-        # Remove previous temp directory if a new file is uploaded
+    if "last_uploaded_file" not in st.session_state or st.session_state["last_uploaded_file"] != st.session_state.uploaded_file.name:
         if "temp_dir" in st.session_state and st.session_state["temp_dir"]:
             st.session_state["temp_dir"].cleanup()
-            st.session_state.pop("temp_dir", None)
-        # Create a new temp directory and reset cache
         st.session_state["temp_dir"] = tempfile.TemporaryDirectory()
-        st.session_state["translation_cache"] = {}
-        st.session_state["last_uploaded_file"] = uploaded_file.name
+        st.session_state["last_uploaded_file"] = st.session_state.uploaded_file.name
 
     # Safely access the temp directory
     temp_dir = st.session_state["temp_dir"].name if "temp_dir" in st.session_state else None
@@ -322,7 +384,7 @@ if uploaded_file:
 
     try:
         # Extract the uploaded file into the temp directory
-        with zipfile.ZipFile(uploaded_file, "r") as zip_ref:
+        with zipfile.ZipFile(st.session_state.uploaded_file, "r") as zip_ref:
             zip_ref.extractall(temp_dir)
         st.write("Files successfully extracted.")
 
@@ -359,7 +421,7 @@ if uploaded_file:
                         
                         processed_files.add(file_path)
                         try:
-                            add_message_to_debug_area(f"Translating file: {file_name}", debug_messages, debug_log)
+                            debug_messages.append(f"Translating file: {file_name}")
 
                             translated_xml = process_and_translate_xml(
                                 file_path,
@@ -409,8 +471,14 @@ if uploaded_file:
         if output_zip.tell() > 0:
             st.success("Translation complete!")
             output_zip.seek(0)
-            translated_filename = f"{os.path.splitext(uploaded_file.name)[0]}-{target_lang}.gridset"
+            translated_filename = f"{os.path.splitext(st.session_state.uploaded_file.name)[0]}-{target_lang}.gridset"
 
+            # Store the output zip and filename in session state
+            st.session_state.output_zip = output_zip
+            st.session_state.translated_filename = translated_filename
+            st.session_state.translation_complete = True
+
+            # Show download button
             st.download_button(
                 label="Download Translated Gridset",
                 data=output_zip,
@@ -418,14 +486,6 @@ if uploaded_file:
                 mime="application/zip",
             )
 
-            # Re-download button
-            if st.button("Re-download"):
-                st.download_button(
-                    label="Download Translated Gridset",
-                    data=output_zip,
-                    file_name=translated_filename,
-                    mime="application/zip",
-                )
 
             # Start again button
             if st.button("Start Again"):
@@ -438,6 +498,16 @@ if uploaded_file:
     if "temp_dir" in st.session_state and st.session_state["temp_dir"]:
         st.session_state["temp_dir"].cleanup()
         st.session_state.pop("temp_dir", None)
+
+# Show download button if translation is complete
+elif st.session_state.translation_complete and st.session_state.output_zip is not None:
+    st.success("Translation complete! You can download your translated gridset below.")
+    st.download_button(
+        label="Download Translated Gridset",
+        data=st.session_state.output_zip,
+        file_name=st.session_state.translated_filename,
+        mime="application/zip",
+    )
 
 st.markdown("---")  # Adds a horizontal line as a separator
 st.markdown(
