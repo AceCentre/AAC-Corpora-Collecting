@@ -312,7 +312,7 @@ def process_and_translate_xml(
         return None
 
 # Function to get supported languages
-def get_supported_languages(tool, api_key=None):
+def get_supported_languages(tool, api_key=None, region=None):
     try:
         if tool == "Google":
             return GoogleTranslator().get_supported_languages()
@@ -402,32 +402,11 @@ if not st.session_state.translation_started:
             help="Choose the translation service to use",
         )
 
-        # Get languages and ensure English is first
-        languages = get_supported_languages(translation_tool)
-        if "english" in languages:
-            languages.remove("english")
-            languages.insert(0, "english")
-        elif "en" in languages:
-            languages.remove("en")
-            languages.insert(0, "en")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            source_lang = st.selectbox(
-                "Source Language",
-                languages,
-                index=0  # English will always be first now
-            )
-        with col2:
-            target_lang = st.selectbox(
-                "Target Language",
-                languages,
-                index=1 if len(languages) > 1 else 0
-            )
-
-        # API configuration
+        # API configuration first
         api_key = None
         region = None
+        valid_credentials = True
+        
         if translation_tool in ["Microsoft", "DeepL"]:
             api_key = st.text_input(
                 f"{translation_tool} API Key",
@@ -439,37 +418,78 @@ if not st.session_state.translation_started:
                     "Azure Region",
                     help="Enter your Azure region (e.g., westeurope)",
                 )
+            
+            # Check if credentials are provided
+            if not api_key:
+                st.warning(f"Please enter your {translation_tool} API key to see available languages.")
+                valid_credentials = False
+            elif translation_tool == "Microsoft" and not region:
+                st.warning("Please enter your Azure region to see available languages.")
+                valid_credentials = False
 
-        # Advanced options in expander
-        with st.expander("Advanced Options"):
-            tweak_xml = st.checkbox(
-                "Use CDATA for text elements",
-                value=False,
-                help="Experimental: This maybe useful to fix issues in some languages where the text breaks the grid eg Urdu."
-            )
-            rate_limit = st.checkbox(
-                "Enable rate limiting",
-                value=True,
-                help="Slow down translation requests to avoid API limits",
-            )
-            show_debug = st.checkbox(
-                "Show debug output",
-                value=False,
-                help="Show detailed progress and debug information in a scrolling box"
-            )
+        # Only show language selection if we have valid credentials
+        if valid_credentials:
+            try:
+                # Get languages and ensure English is first
+                languages = get_supported_languages(translation_tool, api_key, region)
+                if not languages:
+                    st.error("Failed to retrieve supported languages. Please check your API credentials.")
+                    valid_credentials = False
+                else:
+                    if "english" in languages:
+                        languages.remove("english")
+                        languages.insert(0, "english")
+                    elif "en" in languages:
+                        languages.remove("en")
+                        languages.insert(0, "en")
 
-        # Start Translation button
-        if st.button("Start Translation"):
-            st.session_state.translation_started = True
-            st.session_state.show_debug = show_debug
-            st.session_state.translation_tool = translation_tool
-            st.session_state.source_lang = source_lang
-            st.session_state.target_lang = target_lang
-            st.session_state.api_key = api_key
-            st.session_state.region = region
-            st.session_state.tweak_xml = tweak_xml
-            st.session_state.rate_limit = rate_limit
-            st.rerun()
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        source_lang = st.selectbox(
+                            "Source Language",
+                            languages,
+                            index=0  # English will always be first now
+                        )
+                    with col2:
+                        target_lang = st.selectbox(
+                            "Target Language",
+                            languages,
+                            index=1 if len(languages) > 1 else 0
+                        )
+
+                    # Advanced options in expander
+                    with st.expander("Advanced Options"):
+                        tweak_xml = st.checkbox(
+                            "Use CDATA for text elements",
+                            value=False,
+                            help="Experimental: This maybe useful to fix issues in some languages where the text breaks the grid eg Urdu."
+                        )
+                        rate_limit = st.checkbox(
+                            "Enable rate limiting",
+                            value=True,
+                            help="Slow down translation requests to avoid API limits",
+                        )
+                        show_debug = st.checkbox(
+                            "Show debug output",
+                            value=False,
+                            help="Show detailed progress and debug information in a scrolling box"
+                        )
+
+                    # Start Translation button
+                    if st.button("Start Translation"):
+                        st.session_state.translation_started = True
+                        st.session_state.show_debug = show_debug
+                        st.session_state.translation_tool = translation_tool
+                        st.session_state.source_lang = source_lang
+                        st.session_state.target_lang = target_lang
+                        st.session_state.api_key = api_key
+                        st.session_state.region = region
+                        st.session_state.tweak_xml = tweak_xml
+                        st.session_state.rate_limit = rate_limit
+                        st.rerun()
+            except Exception as e:
+                st.error(f"Error retrieving languages: {str(e)}")
+                st.error("Please check your API credentials and try again.")
 
 # Process translation if started
 if st.session_state.translation_started and not st.session_state.translation_complete:
