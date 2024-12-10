@@ -658,7 +658,7 @@ st.markdown(
     #### Related Tools
     - [AAC Keyboard Maker](https://aackeyboardmaker.streamlit.app/): Create custom keyboards for Grid 3 in various languages.
     - [TTS Voices Available](https://ttsvoicesavailable.streamlit.app/): Check if Text-to-Speech (TTS) is supported in your desired language.
-    - [AAC Speak Helper](https://docs.acecentre.org.uk/products/aac-speak-helper-tool): A tool to work with Windows AAC Softwre to provide additional languages for TTS and translation
+    - [AAC Speak Helper](https://docs.acecentre.org.uk/products/aac-speak-helper-tool): A tool to work with Windows AAC Software to provide additional languages for TTS and translation
 
 
     Made by
