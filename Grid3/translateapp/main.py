@@ -512,6 +512,9 @@ elif st.session_state.translation_complete and st.session_state.output_zip is no
 st.markdown("---")  # Adds a horizontal line as a separator
 st.markdown(
     """
+    #### Please Note
+    This is not meant to replace the role of a translator, but it can be useful to "bulk" translate large sets of words and phrases to get you started. Be very careful of using this on core word systems in particular. Languages don't all translate the same way.
+
     #### Related Tools
     - [AAC Keyboard Maker](https://aackeyboardmaker.streamlit.app/): Create custom keyboards for Grid 3 in various languages.
     - [TTS Voices Available](https://ttsvoicesavailable.streamlit.app/): Check if Text-to-Speech (TTS) is supported in your desired language.
