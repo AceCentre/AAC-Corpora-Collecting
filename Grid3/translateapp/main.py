@@ -17,71 +17,113 @@ if "translation_cache" not in st.session_state:
 def create_cdata(text):
     return ET.CDATA(text)
 
-def extract_text_and_metadata_from_parameter(param_elem):
-    """Extract full text and keep track of word metadata"""
+def extract_text_and_metadata_from_element(elem):
+    """Extract full text and keep track of word metadata from either Parameter or WordList Text elements"""
+    if elem is None:
+        return '', []
+        
     full_text = []
     metadata = []
     
-    p_elem = param_elem.find('p')
-    if p_elem is not None:
-        for s_elem in p_elem.findall('s'):
-            r_elem = s_elem.find('r')
-            if r_elem is not None:
-                word = r_elem.text if r_elem.text is not None else ''
-                if word.strip():  # If it's an actual word
-                    full_text.append(word)
-                    # Store any attributes from the s element
-                    meta = dict(s_elem.attrib)
+    try:
+        # Handle both direct <s> elements and those within <p>
+        s_elements = elem.findall('.//s') or []
+        for s_elem in s_elements:
+            if s_elem is None:
+                continue
+                
+            # Store the image attribute if present
+            meta = dict(s_elem.attrib) if s_elem.attrib else {}
+            
+            # Process each <r> element within the <s>
+            r_elements = s_elem.findall('r') or []
+            for r_elem in r_elements:
+                if r_elem is None:
+                    continue
+                    
+                word = r_elem.text if r_elem is not None and r_elem.text is not None else ''
+                if word and word.strip():  # If it's an actual word
+                    full_text.append(word.strip())
                     metadata.append(('word', meta))
-                else:  # It's a space
+                elif word:  # It's a space or other whitespace
                     full_text.append(' ')
                     metadata.append(('space', {}))
+    except Exception as e:
+        st.error(f"Error extracting text: {e}")
+        return '', []
     
-    return ' '.join(full_text), metadata
+    result = ' '.join(full_text)
+    return result.strip(), metadata
 
-def rebuild_parameter_with_metadata(param_elem, translated_text, original_metadata):
-    """Rebuild the parameter structure with translated text and preserve metadata"""
+def rebuild_element_with_metadata(elem, translated_text, original_metadata):
+    """Rebuild either Parameter or WordList Text element structure with translated text and preserve metadata"""
+    if elem is None:
+        return
+        
     if translated_text is None:
         translated_text = ''
+    
+    try:
+        # Clear existing content while preserving attributes
+        attribs = dict(elem.attrib) if elem.attrib else {}
+        elem.clear()
+        for k, v in attribs.items():
+            if k is not None and v is not None:
+                elem.set(k, v)
         
-    # Clear existing content while preserving the Parameter attributes
-    attribs = dict(param_elem.attrib)
-    param_elem.clear()
-    for k, v in attribs.items():
-        param_elem.set(k, v)
-    
-    # Create the basic structure
-    p_elem = ET.SubElement(param_elem, 'p')
-    
-    # Split the translated text into words
-    words = translated_text.strip().split()
-    
-    meta_idx = 0
-    for i, word in enumerate(words):
-        if word is None:
-            continue
+        # Handle empty or whitespace-only translations
+        if not translated_text or not translated_text.strip():
+            # Create minimal valid structure
+            if len(elem.findall('.//p')) > 0:
+                p_elem = ET.SubElement(elem, 'p')
+                s_elem = ET.SubElement(p_elem, 's')
+            else:
+                s_elem = ET.SubElement(elem, 's')
+            r_elem = ET.SubElement(s_elem, 'r')
+            r_elem.text = ' '
+            return
+        
+        # Split the translated text into words, handling None or empty cases
+        words = [w for w in translated_text.strip().split() if w]
+        if not words:
+            words = [' ']
+        
+        # Check if we need a <p> wrapper (if original had one)
+        needs_p = len(elem.findall('.//p')) > 0
+        parent_elem = ET.SubElement(elem, 'p') if needs_p else elem
+        
+        meta_idx = 0
+        current_s = None
+        
+        for i, word in enumerate(words):
+            if word is None or not word.strip():
+                continue
+                
+            # Get metadata for this word
+            meta_data = {}
+            if meta_idx < len(original_metadata):
+                meta_type, meta_data = original_metadata[meta_idx]
+                
+                # Create new <s> element only if we need one (new word or different image)
+                if current_s is None or meta_type == 'word':
+                    current_s = ET.SubElement(parent_elem, 's')
+                    # Apply metadata (like Image attribute)
+                    for k, v in meta_data.items():
+                        if k is not None and v is not None:
+                            current_s.set(k, v)
             
-        # Create word element
-        s_elem = ET.SubElement(p_elem, 's')
-        
-        # Apply metadata if available
-        if meta_idx < len(original_metadata):
-            meta_type, meta_data = original_metadata[meta_idx]
-            if meta_type == 'word':
-                for k, v in meta_data.items():
-                    s_elem.set(k, v)
-        
-        # Add the word
-        r_elem = ET.SubElement(s_elem, 'r')
-        r_elem.text = word
-        meta_idx += 1
-        
-        # Add space after word (except last word)
-        if i < len(words) - 1:
-            s_space = ET.SubElement(p_elem, 's')
-            r_space = ET.SubElement(s_space, 'r')
-            r_space.text = create_cdata(' ')
+            # Add the word
+            r_elem = ET.SubElement(current_s, 'r')
+            r_elem.text = word
             meta_idx += 1
+            
+            # Add space after word (except last word)
+            if i < len(words) - 1:
+                r_space = ET.SubElement(current_s, 'r')
+                r_space.text = create_cdata(' ')
+                meta_idx += 1
+    except Exception as e:
+        st.error(f"Error rebuilding element: {e}")
 
 def process_and_translate_xml(
     file, 
@@ -103,6 +145,38 @@ def process_and_translate_xml(
         if debug_log:
             debug_log.text_area("Debug Log", "\n".join(debug_messages), height=300)
 
+    def log_element_context(element):
+        """Log context about the XML element being processed"""
+        try:
+            context = []
+            # Get element path
+            path = element.getroottree().getpath(element)
+            context.append(f"XML Path: {path}")
+            
+            # Get element attributes
+            if element.attrib:
+                context.append("Attributes:")
+                for k, v in element.attrib.items():
+                    context.append(f"  {k}: {v}")
+            
+            # Get parent info
+            parent = element.getparent()
+            if parent is not None:
+                context.append(f"Parent: {parent.tag}")
+                if parent.attrib:
+                    context.append("Parent Attributes:")
+                    for k, v in parent.attrib.items():
+                        context.append(f"  {k}: {v}")
+            
+            # Get text content preview
+            if element.text:
+                preview = element.text[:100] + "..." if len(element.text) > 100 else element.text
+                context.append(f"Text Content: {preview}")
+            
+            return "\n".join(context)
+        except Exception as e:
+            return f"Error getting element context: {e}"
+
     try:
         parser = ET.XMLParser(remove_blank_text=True)
         tree = ET.parse(file, parser)
@@ -114,44 +188,64 @@ def process_and_translate_xml(
         metadata_store = {}
 
         add_message("Parsing XML and collecting translatable texts...")
+        current_element = None  # Keep track of current element being processed
+        
         for element in root.iter():
-            # Skip known non-translatable elements
-            if element.tag in ["Style", "Image", "ContentType", "ContentSubType"]:
-                continue
+            try:
+                current_element = element
+                # Skip known non-translatable elements
+                if element.tag in ["Style", "Image", "ContentType", "ContentSubType"]:
+                    continue
 
-            # Handle Parameter elements specially
-            if element.tag == "Parameter":
-                key = element.get("Key")
-                if key == "text":
-                    # Skip grid names in Jump.To commands
-                    parent = element.getparent()
-                    if parent is not None:
-                        command_id = parent.get("ID")
-                        if command_id == "Jump.To":
-                            continue
-                        
-                    # For complex text parameters with <p><s><r> structure
-                    if element.find('.//p') is not None:
-                        full_text, metadata = extract_text_and_metadata_from_parameter(element)
+                # Handle Parameter elements specially
+                if element.tag == "Parameter":
+                    key = element.get("Key")
+                    if key == "text":
+                        # Skip grid names in Jump.To commands
+                        parent = element.getparent()
+                        if parent is not None:
+                            command_id = parent.get("ID")
+                            if command_id == "Jump.To":
+                                continue
+                            
+                        # For complex text parameters with <p><s><r> structure
+                        if element.find('.//p') is not None or element.find('.//s') is not None:
+                            full_text, metadata = extract_text_and_metadata_from_element(element)
+                            if full_text.strip():
+                                translatable_texts.append(full_text)
+                                elements_to_translate.append(("parameter", element))
+                                metadata_store[full_text] = metadata
+                                add_message(f"Added complex parameter text for translation: {full_text}")
+                        else:
+                            # For simple text parameters (like in Speech.SpeakNow)
+                            if element.text and element.text.strip():
+                                translatable_texts.append(element.text)
+                                elements_to_translate.append(("simple", element))
+                                add_message(f"Added simple parameter text for translation: {element.text}")
+                
+                # Handle WordList Text elements
+                elif element.tag == "Text" and element.getparent() is not None and element.getparent().tag == "WordListItem":
+                    if element.find('.//r') is not None:
+                        full_text, metadata = extract_text_and_metadata_from_element(element)
                         if full_text.strip():
                             translatable_texts.append(full_text)
-                            elements_to_translate.append(("parameter", element))
+                            elements_to_translate.append(("wordlist", element))
                             metadata_store[full_text] = metadata
-                            add_message(f"Added complex parameter text for translation: {full_text}")
-                    else:
-                        # For simple text parameters (like in Speech.SpeakNow)
-                        if element.text and element.text.strip():
-                            translatable_texts.append(element.text)
-                            elements_to_translate.append(("simple", element))
-                            add_message(f"Added simple parameter text for translation: {element.text}")
-            
-            # Handle Caption elements
-            elif element.tag == "Caption":
-                if element.text and element.text.strip():
-                    text = element.text.strip()
-                    translatable_texts.append(text)
-                    elements_to_translate.append(("caption", element))
-                    add_message(f"Added caption for translation: {text}")
+                            add_message(f"Added wordlist text for translation: {full_text}")
+                
+                # Handle Caption elements
+                elif element.tag == "Caption":
+                    if element.text and element.text.strip():
+                        text = element.text.strip()
+                        translatable_texts.append(text)
+                        elements_to_translate.append(("caption", element))
+                        add_message(f"Added caption for translation: {text}")
+            except Exception as e:
+                error_context = log_element_context(current_element)
+                error_message = f"Error processing element:\n{error_context}\nError: {str(e)}"
+                add_message(error_message)
+                st.error(error_message)
+                continue  # Continue with next element instead of failing completely
 
         # Perform batch translation with caching
         add_message("Translating collected texts...")
@@ -174,18 +268,33 @@ def process_and_translate_xml(
 
         # Update XML with translated text
         add_message("Updating XML with translated texts...")
+        current_element = None
         for (elem_type, element), translated, original in zip(elements_to_translate, translated_texts, translatable_texts):
-            if elem_type == "parameter":
-                # Get the original metadata for this text if any
-                original_metadata = metadata_store.get(original, [])
-                rebuild_parameter_with_metadata(element, translated, original_metadata)
-                add_message(f"Updated complex parameter text with: {translated}")
-            elif elem_type == "caption":
-                element.text = create_cdata(translated.strip() + ' ')
-                add_message(f"Updated caption with CDATA: {translated}")
-            else:  # simple
-                element.text = translated
-                add_message(f"Updated element text: {translated}")
+            try:
+                current_element = element
+                if elem_type in ["parameter", "wordlist"]:
+                    # Get the original metadata for this text if any
+                    original_metadata = metadata_store.get(original, [])
+                    rebuild_element_with_metadata(element, translated, original_metadata)
+                    add_message(f"Updated {elem_type} text with: {translated}")
+                elif elem_type == "caption":
+                    # Handle None or empty translations for captions
+                    if translated is None or not translated.strip():
+                        translated = original or ''  # Fallback to original text or empty string
+                    element.text = create_cdata(translated.strip() + ' ')
+                    add_message(f"Updated caption with CDATA: {translated}")
+                else:  # simple
+                    # Handle None or empty translations for simple text
+                    if translated is None or not translated.strip():
+                        translated = original or ''  # Fallback to original text or empty string
+                    element.text = translated
+                    add_message(f"Updated element text: {translated}")
+            except Exception as e:
+                error_context = log_element_context(current_element)
+                error_message = f"Error updating element:\n{error_context}\nError: {str(e)}"
+                add_message(error_message)
+                st.error(error_message)
+                continue
 
         # Save modified XML
         translated_xml = BytesIO()
@@ -194,7 +303,10 @@ def process_and_translate_xml(
         add_message("Modified XML saved successfully.")
         return translated_xml
     except Exception as e:
-        error_message = f"Error processing XML: {e}"
+        error_context = ""
+        if 'current_element' in locals() and current_element is not None:
+            error_context = log_element_context(current_element)
+        error_message = f"Error processing XML:\n{error_context}\nError: {str(e)}"
         add_message(error_message)
         st.error(error_message)
         return None
