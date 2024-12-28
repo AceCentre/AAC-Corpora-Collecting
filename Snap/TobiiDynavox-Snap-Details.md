@@ -324,3 +324,8 @@ Ref: ButtonPageLink.ButtonId > Button.Id
 Ref: Button.PageId > Page.Id
 
 ```
+
+## Button/Language data
+
+- There are really only two tables with this data in it `Button`- `Label` and `Button`- `Message` and `Page` - `Title`
+
